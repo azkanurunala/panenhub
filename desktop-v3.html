@@ -1239,8 +1239,56 @@ FLOWS['detail_item'] = [
 FLOWS['detail_kpi'] = [
   function(){
     var s=M.step, d=M.data, t=M.total;
-    var bdy='';
-    if(d.id==='pengguna'){
+    var bdy='', acts='';
+    if(d.id==='anggota'){
+      bdy='<div class="mo-body">'+
+        '<div style="font-size:18px;font-weight:800;color:#1e293b;margin-bottom:12px;text-align:center">👨‍🌾 Anggota Koperasi Aktif</div>'+
+        '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px;margin-bottom:16px">'+
+          '<div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:8px">BREAKDOWN KOMODITAS</div>'+
+          '<div style="display:flex;justify-content:center;margin:16px 0">'+
+            '<svg viewBox="0 0 36 36" style="width:100px;height:100px;">'+
+              '<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e2e8f0" stroke-width="4"/>'+
+              '<path stroke-dasharray="70, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#15803d" stroke-width="4"/>'+
+              '<path stroke-dasharray="30, 100" stroke-dashoffset="-70" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#3b82f6" stroke-width="4"/>'+
+              '<text x="18" y="20.35" style="font-size:8px;font-weight:800;fill:#1e293b" text-anchor="middle">122</text>'+
+            '</svg>'+
+          '</div>'+
+          infoRow('Padi IR64','85 Petani','#15803d') + 
+          infoRow('Jagung Hibrida','37 Petani','#3b82f6') + 
+        '</div>'+
+        '<div style="font-size:11px;font-weight:800;color:#64748b;margin:16px 0 8px;text-transform:uppercase;letter-spacing:0.05em">Pertumbuhan (Historis vs Prediktif)</div>'+
+        '<div style="background:#f8fafc;padding:16px 12px;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:16px">'+
+          '<svg viewBox="0 0 100 40" style="width:100%;height:60px;overflow:visible">'+
+            '<polyline fill="none" stroke="#15803d" stroke-width="2" points="0,35 25,25 50,20" stroke-linecap="round" stroke-linejoin="round"/>'+
+            '<polyline fill="none" stroke="#15803d" stroke-width="2" stroke-dasharray="3,3" points="50,20 75,10 100,5"/>'+
+            '<circle cx="50" cy="20" r="3" fill="#15803d"/>'+
+          '</svg>'+
+          '<div style="display:flex;justify-content:space-between;font-size:9px;color:#64748b;margin-top:8px;font-weight:600"><span>Jan</span><span>Skrg</span><span>Des (Prediksi)</span></div>'+
+        '</div>'+
+      '</div>';
+      acts='<button class="tap" onclick="M.open(\'unduh_laporan\')" style="flex:1;background:#e0e7ff;color:#4338ca;font-weight:700;padding:12px;border-radius:10px;font-size:12px">Unduh Daftar Anggota</button>';
+    } else if(d.id==='lahan'){
+      bdy='<div class="mo-body">'+
+        '<div style="font-size:18px;font-weight:800;color:#1e293b;margin-bottom:12px;text-align:center">🌾 Profil Lahan & Tanam</div>'+
+        '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px;margin-bottom:16px">'+
+          '<div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:8px">STATUS PENANAMAN</div>'+
+          infoRow('Komoditas Aktif','Padi IR64','#15803d') + 
+          infoRow('Estimasi Luas','1.2 Hektar','#1e293b') + 
+          infoRow('Fase Hidup','Vegetatif (Hari 45)','#1d4ed8') + 
+        '</div>'+
+        '<div style="font-size:11px;font-weight:800;color:#64748b;margin:16px 0 8px;text-transform:uppercase;letter-spacing:0.05em">Siklus Panen (Historis vs Prediktif)</div>'+
+        '<div style="background:#f8fafc;padding:16px 12px;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:16px">'+
+          '<svg viewBox="0 0 100 40" style="width:100%;height:60px;overflow:visible">'+
+            '<polyline fill="none" stroke="#10b981" stroke-width="2" points="0,35 25,25 50,30" stroke-linecap="round" stroke-linejoin="round"/>'+
+            '<polyline fill="none" stroke="#10b981" stroke-width="2" stroke-dasharray="3,3" points="50,30 75,15 100,5"/>'+
+            '<circle cx="50" cy="30" r="3" fill="#10b981"/>'+
+          '</svg>'+
+          '<div style="display:flex;justify-content:space-between;font-size:9px;color:#64748b;margin-top:8px;font-weight:600"><span>Panen Lalu (7T)</span><span>Skrg</span><span>Est. Panen (8.2T)</span></div>'+
+        '</div>'+
+        '<div style="font-size:11px;color:#64748b">Sensor iklim memprediksi peningkatan yield musim ini didukung cuaca mikro.</div>'+
+      '</div>';
+      acts='<button class="tap" onclick="M.open(\'peta_geospasial\')" style="flex:1;background:#f0fdf4;color:#15803d;font-weight:700;padding:12px;border-radius:10px;font-size:12px">🛰️ NDVI Satelit Lahan</button>';
+    } else if(d.id==='pengguna'){
       bdy='<div class="mo-body">'+
         '<div style="font-size:18px;font-weight:800;color:#1e293b;margin-bottom:12px;text-align:center">👥 Distribusi Akses Pengguna</div>'+
         '<div style="display:flex;justify-content:center;margin:16px 0">'+
@@ -1267,7 +1315,7 @@ FLOWS['detail_kpi'] = [
           '<div>🟡 2 Registrasi tertunda (kurang KTP)</div>'+
         '</div>'+
       '</div>';
-      return mHeader('Laporan Metrik: Pengguna',s,t)+bdy;
+      acts='<button class="tap" onclick="M.open(\'unduh_laporan\')" style="flex:1;background:#e0e7ff;color:#4338ca;font-weight:700;padding:12px;border-radius:10px;font-size:12px">Unduh Laporan Format .CSV</button>';
     } else if(d.id==='koperasi'){
       var kopList = [
         {n:'KKMP Cilangkap', l:'Depok', m:122},
@@ -1291,7 +1339,7 @@ FLOWS['detail_kpi'] = [
           '</div>';
         }).join('')+
         '</div></div>';
-      return mHeader('Filter Terhubung: Koperasi',s,t)+bdy;
+      acts='<button class="tap" onclick="M.open(\'peta_geospasial\')" style="flex:1;background:#f0fdf4;color:#15803d;font-weight:700;padding:12px;border-radius:10px;font-size:12px">🤖 AI Peta Geospasial</button>';
     } else if(d.id==='ai_model'){
       bdy='<div class="mo-body">'+
         '<div style="font-size:18px;font-weight:800;color:#1e293b;margin-bottom:12px">🧠 AI Model Pipeline Health</div>'+
@@ -1304,7 +1352,7 @@ FLOWS['detail_kpi'] = [
         '<div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:8px">Last Retraining Sync</div>'+
         '<div style="font-size:11px;color:#64748b">Pipeline di-retrain setiap 24 jam dengan data satelit dan harga PIHPS. Terakhir sinkronisasi: H-4 menit.</div>'+
       '</div>';
-      return mHeader('Laporan Metrik: AI Aktif',s,t)+bdy;
+      acts='<button class="tap" onclick="M.open(\'force_retrain\')" style="flex:1;background:#fefce8;color:#a16207;font-weight:700;padding:12px;border-radius:10px;font-size:12px">🔄 Force Retrain Model</button>';
     } else if(d.id==='system'){
       bdy='<div class="mo-body">'+
         '<div style="font-size:18px;font-weight:800;color:#1e293b;margin-bottom:12px;text-align:center">⚡ System API & Cloud Health</div>'+
@@ -1325,10 +1373,19 @@ FLOWS['detail_kpi'] = [
         '</div>'+
         '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px;color:#15803d;font-size:11px;font-weight:600">✅ Seluruh sistem PanenHub beroperasi dengan normal tanpa anomali server.</div>'+
       '</div>';
-      return mHeader('Laporan Metrik: Server',s,t)+bdy;
+      acts='<button class="tap" onclick="M.open(\'server_logs\')" style="flex:1;background:#eff6ff;color:#1d4ed8;font-weight:700;padding:12px;border-radius:10px;font-size:12px">🛠️ Diagnostic & Server Logs</button>';
     } else if(d.id==='finansial'){
       bdy='<div class="mo-body">'+
-        '<div style="font-size:18px;font-weight:800;color:#1e293b;margin-bottom:12px">💰 Rincian Finansial</div>'+
+        '<div style="font-size:18px;font-weight:800;color:#1e293b;margin-bottom:12px;text-align:center">💰 Rincian Finansial</div>'+
+        '<div style="font-size:11px;font-weight:800;color:#64748b;margin:16px 0 8px;text-transform:uppercase;letter-spacing:0.05em">Arus Kas (Historis vs Prediktif)</div>'+
+        '<div style="background:#f8fafc;padding:16px 12px;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:16px">'+
+          '<svg viewBox="0 0 100 40" style="width:100%;height:60px;overflow:visible">'+
+            '<polyline fill="none" stroke="#15803d" stroke-width="2" points="0,30 25,20 50,15" stroke-linecap="round" stroke-linejoin="round"/>'+
+            '<polyline fill="none" stroke="#15803d" stroke-width="2" stroke-dasharray="3,3" points="50,15 75,5 100,10"/>'+
+            '<circle cx="50" cy="15" r="3" fill="#15803d"/>'+
+          '</svg>'+
+          '<div style="display:flex;justify-content:space-between;font-size:9px;color:#64748b;margin-top:8px;font-weight:600"><span>Bulan Lalu</span><span>Skrg</span><span>Bulan Depan (Prediksi)</span></div>'+
+        '</div>'+
         '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px;margin-bottom:16px">'+
           '<div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:8px">LEDGER TERAKHIR</div>'+
           infoRow('Deposit Wallet',fmtRp(4250000),'#15803d') + 
@@ -1337,10 +1394,19 @@ FLOWS['detail_kpi'] = [
         '</div>'+
         '<div style="font-size:11px;color:#64748b">Metrik pendanaan ini tersinkronisasi otomatis dengan Escrow Bank Mitra.</div>'+
       '</div>';
-      return mHeader('Metrik Finansial',s,t)+bdy;
+      acts='<button class="tap" onclick="event.stopPropagation(); M.open(\'ajukan_kur\')" style="flex:1;background:#eff6ff;color:#2563eb;font-weight:700;padding:12px;border-radius:10px;font-size:12px">🤖 Simulasi Pencairan & KUR</button>';
     } else if(d.id==='performa'){
       bdy='<div class="mo-body">'+
-        '<div style="font-size:18px;font-weight:800;color:#1e293b;margin-bottom:12px">⭐ Rating & Reputasi</div>'+
+        '<div style="font-size:18px;font-weight:800;color:#1e293b;margin-bottom:12px;text-align:center">⭐ Rating & Reputasi</div>'+
+        '<div style="font-size:11px;font-weight:800;color:#64748b;margin:16px 0 8px;text-transform:uppercase;letter-spacing:0.05em">Akurasi AI (Historis vs Prediktif)</div>'+
+        '<div style="background:#f8fafc;padding:16px 12px;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:16px">'+
+          '<svg viewBox="0 0 100 40" style="width:100%;height:60px;overflow:visible">'+
+            '<polyline fill="none" stroke="#2563eb" stroke-width="2" points="0,25 25,15 50,20" stroke-linecap="round" stroke-linejoin="round"/>'+
+            '<polyline fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="3,3" points="50,20 75,5 100,5"/>'+
+            '<circle cx="50" cy="20" r="3" fill="#2563eb"/>'+
+          '</svg>'+
+          '<div style="display:flex;justify-content:space-between;font-size:9px;color:#64748b;margin-top:8px;font-weight:600"><span>Panen Lalu</span><span>Skrg</span><span>Panen Depan (Prediksi)</span></div>'+
+        '</div>'+
         '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px;margin-bottom:16px">'+
           infoRow('Akurasi Hasil Panen','95% Sesuai Prediksi','#15803d') + 
           infoRow('Kecepatan Respon','Kurang dari 4 jam','#15803d') + 
@@ -1348,19 +1414,121 @@ FLOWS['detail_kpi'] = [
         '</div>'+
         '<div style="font-size:11px;color:#64748b">Credit score ini digunakan secara otomatis oleh model AI untuk menentukan prioritas permintaan Pre-order.</div>'+
       '</div>';
-      return mHeader('Detail Reputasi',s,t)+bdy;
+      acts='<button class="tap" onclick="M.open(\'tinjauan_validasi\')" style="flex:1;background:#eff6ff;color:#1d4ed8;font-weight:700;padding:12px;border-radius:10px;font-size:12px">📝 Ajukan Tinjauan Validasi</button>';
     } else if(d.id==='match'){
       bdy='<div class="mo-body">'+
-        '<div style="font-size:18px;font-weight:800;color:#1e293b;margin-bottom:12px">🔗 AI Fulfillment Status</div>'+
+        '<div style="font-size:18px;font-weight:800;color:#1e293b;margin-bottom:12px;text-align:center">🔗 AI Fulfillment Status</div>'+
+        '<div style="font-size:11px;font-weight:800;color:#64748b;margin:16px 0 8px;text-transform:uppercase;letter-spacing:0.05em">Matching Rate (Historis vs Prediktif)</div>'+
+        '<div style="background:#f8fafc;padding:16px 12px;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:16px">'+
+          '<svg viewBox="0 0 100 40" style="width:100%;height:60px;overflow:visible">'+
+            '<polyline fill="none" stroke="#15803d" stroke-width="2" points="0,30 25,25 50,15" stroke-linecap="round" stroke-linejoin="round"/>'+
+            '<polyline fill="none" stroke="#15803d" stroke-width="2" stroke-dasharray="3,3" points="50,15 75,5 100,0"/>'+
+            '<circle cx="50" cy="15" r="3" fill="#15803d"/>'+
+          '</svg>'+
+          '<div style="display:flex;justify-content:space-between;font-size:9px;color:#64748b;margin-top:8px;font-weight:600"><span>H-7</span><span>Skrg</span><span>H+7 (Prediksi)</span></div>'+
+        '</div>'+
         '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px">'+
           infoRow('Pre-order B2B Match','12 Ton Beras IR64','#15803d') + 
           infoRow('Pengiriman Berlangsung','3 Armada Logistik Aktif','') + 
         '</div>'+
       '</div>';
-      return mHeader('Laporan AI Match',s,t)+bdy;
+      acts='<button class="tap" onclick="M.open(\'buat_preorder\')" style="flex:1;background:#eff6ff;color:#1d4ed8;font-weight:700;padding:12px;border-radius:10px;font-size:12px">🤖 Buka Terminal Match</button>';
     } else {
       bdy='<div class="mo-body"><div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;text-align:center;font-size:12px;color:#64748b">Detail laporan untuk metrik ini belum tersedia.</div></div>';
-      return mHeader('Laporan Metrik',s,t)+bdy;
+    }
+    
+    var f=acts?'<div style="padding:16px;display:flex;gap:8px;border-top:1px solid #e2e8f0;background:#f8fafc;border-radius:0 0 16px 16px">'+acts+'</div>':'';
+    return mHeader(d.id==='pengguna'?'Laporan Metrik: Pengguna':d.id==='anggota'?'Detail: Anggota Koperasi':d.id==='lahan'?'Aset Lahan':d.id==='koperasi'?'Filter Terhubung: Koperasi':d.id==='ai_model'?'Laporan Metrik: AI Aktif':d.id==='system'?'Laporan Metrik: Server':d.id==='finansial'?'Metrik Finansial':d.id==='performa'?'Detail Reputasi':d.id==='match'?'Laporan AI Match':'Laporan Metrik',s,t)+bdy+f;
+  }
+];
+
+FLOWS['unduh_laporan'] = [
+  function(){
+    var s=M.step;
+    if(s===1){
+      var bdy='<div class="mo-body" style="text-align:center;padding:30px 20px">'+
+        '<div style="font-size:40px;margin-bottom:16px">⏳</div>'+
+        '<div style="font-size:16px;font-weight:800;color:#1e293b">Menyusun Kompilasi Data...</div>'+
+        '<div style="font-size:12px;color:#64748b;margin-top:8px">Menjalankan kueri CSV dari Database Pusat.</div>'+
+      '</div>';
+      setTimeout(function(){M.next();}, 1500);
+      return mHeader('Mengunduh Laporan',s,2)+bdy;
+    } else {
+      var bdy='<div class="mo-body" style="text-align:center;padding:30px 20px">'+
+        '<div style="font-size:40px;margin-bottom:16px">✅</div>'+
+        '<div style="font-size:16px;font-weight:800;color:#15803d">Laporan Tersimpan</div>'+
+        '<div style="font-size:12px;color:#64748b;margin-top:8px">File CSV berhasil diunduh ke direktori lokal perangkat Anda.</div>'+
+      '</div>';
+      return mHeader('Unduhan Selesai',s,2)+bdy+'<div style="padding:16px;border-top:1px solid #e2e8f0;background:#f8fafc;border-radius:0 0 16px 16px"><button class="tap" onclick="M.close()" style="width:100%;background:#15803d;color:#fff;padding:12px;border-radius:10px;font-weight:700;font-size:14px">Tutup Halaman</button></div>';
+    }
+  }
+];
+
+FLOWS['peta_geospasial'] = [
+  function(){
+    return mHeader('Distribusi Area',1,1)+'<div class="mo-body" style="padding:0;height:300px;background:#e2e8f0;position:relative;overflow:hidden">'+
+      '<div style="position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at center, #f8fafc 0%, #cbd5e1 100%);display:flex;align-items:center;justify-content:center"><div style="text-align:center"><div style="font-size:40px;animation:pulse 2s infinite">📡</div><div style="font-size:11px;font-weight:700;color:#64748b;margin-top:8px">Mendeteksi Node Koperasi...</div></div></div>'+
+      '</div>'+
+      '<div style="padding:16px;border-top:1px solid #e2e8f0;background:#f8fafc;border-radius:0 0 16px 16px"><button class="tap" onclick="M.close()" style="width:100%;border:1px solid #cbd5e1;background:#fff;color:#475569;padding:12px;border-radius:10px;font-weight:700;font-size:14px">Tutup Overlay Peta</button></div>';
+  }
+];
+
+FLOWS['force_retrain'] = [
+  function(){
+    var s=M.step;
+    if(s===1){
+      var bdy='<div class="mo-body" style="padding:20px;background:#1e293b;color:#4ade80;font-family:monospace;font-size:11px;line-height:1.6;height:250px;overflow-y:auto">'+
+        '<div>> Initializing AI Pipeline... [OK]</div>'+
+        '<div>> Syncing PIHPS Database... [OK]</div>'+
+        '<div>> Rebuilding Weights Array... </div>'+
+        '<div style="margin-top:10px;animation:pulse 1s infinite">Memproses 14.020 relasi data...</div>'+
+      '</div>';
+      setTimeout(function(){M.next();}, 2000);
+      return mHeader('AI Retraining',s,2)+bdy;
+    } else {
+      return mHeader('Sub-system Updated',s,2)+'<div class="mo-body" style="text-align:center;padding:30px 20px">'+
+        '<div style="font-size:40px;margin-bottom:16px">✨</div>'+
+        '<div style="font-size:16px;font-weight:800;color:#15803d">Pipeline Tersinkronisasi</div>'+
+        '<div style="font-size:12px;color:#64748b;margin-top:8px">AI Model kini menggunakan data waktu nyata H-0 menit.</div>'+
+      '</div>'+
+      '<div style="padding:16px;border-top:1px solid #e2e8f0;background:#f8fafc;border-radius:0 0 16px 16px"><button class="tap" onclick="M.close()" style="width:100%;background:#15803d;color:#fff;padding:12px;border-radius:10px;font-weight:700;font-size:14px">Kembali ke Dasbor</button></div>';
+    }
+  }
+];
+
+FLOWS['server_logs'] = [
+  function(){
+    return mHeader('Diagnostic Logs',1,1)+'<div class="mo-body" style="padding:16px;background:#0f172a;color:#cbd5e1;font-family:monospace;font-size:10px;line-height:1.7;height:300px;overflow-y:auto;display:flex;flex-direction:column-reverse;gap:4px">'+
+      '<div>[INFO] GET /api/v1/auth - 200 OK (22ms)</div>'+
+      '<div style="color:#f59e0b">[WARN] DB Load elevated (14%) - auto-scaling standby</div>'+
+      '<div>[INFO] AI Pre-order Matcher Cron ran successfully</div>'+
+      '<div>[INFO] SIMKOPDES Sync WebSocket Connected</div>'+
+      '<div style="color:#4ade80">[PING] All Region Relays responding < 45ms</div>'+
+    '</div>'+
+    '<div style="padding:16px;border-top:1px solid #e2e8f0;background:#f8fafc;border-radius:0 0 16px 16px"><button class="tap" onclick="M.close()" style="width:100%;border:1px solid #cbd5e1;color:#64748b;padding:12px;border-radius:10px;font-weight:700;background:#fff;font-size:14px">Tutup Terminal</button></div>';
+  }
+];
+
+FLOWS['tinjauan_validasi'] = [
+  function(){
+    var s=M.step;
+    if(s===1){
+      var bdy='<div class="mo-body"><div style="font-size:16px;font-weight:800;color:#1e293b;margin-bottom:12px">Mengajukan Tinjauan Validasi</div>'+
+      '<div style="font-size:11px;color:#64748b;margin-bottom:16px">Pilih metrik yang menurut Anda kurang akurat dalam kalkulasi AI kami:</div>'+
+      '<select style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:8px;font-size:12px;background:#fff;margin-bottom:12px"><option>Akurasi Hasil Panen (Quality)</option><option>Kecepatan Respon (SLAs)</option></select>'+
+      '<textarea style="width:100%;height:100px;padding:12px;border:1px solid #cbd5e1;border-radius:8px;font-size:12px;background:#fff;resize:none" placeholder="Masukkan argumen atau dokumen sanggahan..."></textarea></div>'+
+      '<div style="padding:16px;border-top:1px solid #e2e8f0;background:#f8fafc;border-radius:0 0 16px 16px;display:flex;gap:8px">'+
+      '<button class="tap" onclick="M.close()" style="flex:1;background:#f1f5f9;color:#64748b;font-weight:700;padding:12px;border-radius:8px;font-size:14px">Batal</button>'+
+      '<button class="tap" onclick="M.next()" style="flex:2;background:#1d4ed8;color:#fff;font-weight:700;padding:12px;border-radius:8px;font-size:14px">Kirim Tiket Sanggahan</button>'+
+      '</div>';
+      return mHeader('Form Tinjauan',s,2)+bdy;
+    } else {
+      return mHeader('Pengajuan Berhasil',s,2)+'<div class="mo-body" style="text-align:center;padding:30px 20px">'+
+        '<div style="font-size:40px;margin-bottom:16px">📬</div>'+
+        '<div style="font-size:16px;font-weight:800;color:#1d4ed8">Tiket Validasi Terkirim</div>'+
+        '<div style="font-size:12px;color:#64748b;margin-top:8px">Tim Validator Human-in-the-Loop akan meninjau metrik tersebut dalam 1x24 jam kerja.</div>'+
+      '</div>'+
+      '<div style="padding:16px;border-top:1px solid #e2e8f0;background:#f8fafc;border-radius:0 0 16px 16px"><button class="tap" onclick="M.close()" style="width:100%;background:#1d4ed8;color:#fff;padding:12px;border-radius:10px;font-weight:700;font-size:14px">Tutup & Mengerti</button></div>';
     }
   }
 ];
@@ -1650,14 +1818,14 @@ function pageBeranda(){
 
   var kpis='';
   if(u.role==='koperasi') kpis=
-    kpiBox('👥','Anggota Aktif',u.anggota,'dari 59.703 penduduk','#1e293b','M.open(\'detail_kpi\',{id:\'pengguna\'})')+
+    kpiBox('👥','Anggota Aktif',u.anggota,'dari 59.703 penduduk','#1e293b','M.open(\'detail_kpi\',{id:\'anggota\'})')+
     kpiBox('💰','Modal Koperasi',fmtK(u.modal),'Total modal terhimpun','#15803d','M.open(\'detail_kpi\',{id:\'finansial\'})')+
     kpiBox('🔗','Match Aktif',u.matchAktif,'Distribusi berjalan','#1e293b','M.open(\'detail_kpi\',{id:\'match\'})')+
     kpiBox('📦','Distribusi/Bln',fmtK(u.distribusi),'Omzet bulanan','#15803d','M.open(\'detail_kpi\',{id:\'finansial\'})');
   else if(u.role==='petani') kpis=
     kpiBox('💰','Saldo Wallet',fmtK(u.saldo),'Saldo aktif','#15803d','M.open(\'detail_kpi\',{id:\'finansial\'})')+
     kpiBox('⭐','Rating Petani',u.rating,'Sangat Baik','#1e293b','M.open(\'detail_kpi\',{id:\'performa\'})')+
-    kpiBox('🌾','Lahan',u.lahan,'Lahan dikelola','#1e293b','M.open(\'detail_kpi\',{id:\'pengguna\'})')+
+    kpiBox('🌾','Lahan',u.lahan,'Lahan dikelola','#1e293b','M.open(\'detail_kpi\',{id:\'lahan\'})')+
     kpiBox('📋','Credit Score','84/100','Tier A','#2563eb','M.open(\'detail_kpi\',{id:\'finansial\'})');
   else if(u.role==='pemerintah') kpis=
     kpiBox('🌿','Wilayah Surplus',surp.length,'Wilayah','#15803d','M.open(\'detail_kpi\',{id:\'koperasi\'})')+
