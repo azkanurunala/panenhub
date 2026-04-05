@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8"/>
@@ -143,8 +143,8 @@ var KOPDES = {
 };
 
 var USERS = [
-  {id:1,role:'koperasi',  name:'KUD Karya Tani Karawang',    init:'KT',loc:'Karawang, Jawa Barat', anggota:245,modal:2400000000,distribusi:48200000,matchAktif:3,join:'Jun 2021'},
-  {id:2,role:'petani',    name:'Pak Hendra Susanto',          init:'HS',loc:'Karawang, Jawa Barat', lahan:'2.5 Ha',saldo:4250000,koperasi:'KUD Karya Tani',rating:4.8,join:'Mar 2022'},
+  {id:1,role:'koperasi',  name:'KKMP Cilangkap',    init:'MP',loc:'Cilangkap, Kota Depok', anggota:122,modal:2400000000,distribusi:48200000,matchAktif:3,join:'Jun 2021'},
+  {id:2,role:'petani',    name:'Pak Hendra Susanto',          init:'HS',loc:'Cilangkap, Kota Depok', lahan:'2.5 Ha',saldo:4250000,koperasi:'KKMP Cilangkap',rating:4.8,join:'Mar 2022'},
   {id:3,role:'pemerintah',name:'Dinas Ketahanan Pangan Depok',init:'DP',loc:'Kota Depok',           jabatan:'Admin Pangan Daerah',wilayah:12,join:'Sep 2023'},
   {id:4,role:'pembeli',   name:'PT Sumber Pangan Nusantara',  init:'SP',loc:'Jakarta Selatan',       tipe:'Retail / B2B',saldo:48750000,join:'Jan 2023'},
 ];
@@ -153,7 +153,7 @@ var ROLE_LABEL ={koperasi:'Koperasi Intelligence',petani:'Farmer Assistant',peme
 var ROLE_DARK  ={koperasi:'#1e3a5f',petani:'#14301a',pemerintah:'#2d1b50',pembeli:'#2d1b00'};
 
 var COMMODITIES = [
-  {id:1,name:'Beras Premium IR64',  em:'🌾',cat:'Padi',    hK:14500,hP:5200, trend:'up',  ch:2.1, hist:[13200,13500,13800,14000,14200,14500],stok:12500,loc:'Karawang'},
+  {id:1,name:'Beras Premium IR64',  em:'🌾',cat:'Padi',    hK:14500,hP:5200, trend:'up',  ch:2.1, hist:[13200,13500,13800,14000,14200,14500],stok:12500,loc:'Cilangkap'},
   {id:2,name:'Jagung Pipil Kuning', em:'🌽',cat:'Palawija',hK:5800, hP:2100, trend:'down',ch:1.5, hist:[6200,6100,6050,5950,5850,5800],    stok:8200, loc:'Kediri'},
   {id:3,name:'Kedelai Non-GMO',     em:'🫘',cat:'Palawija',hK:12000,hP:8500, trend:'up',  ch:3.8, hist:[10500,10800,11000,11200,11600,12000],stok:3400,loc:'Grobogan'},
   {id:4,name:'Cabai Merah Keriting',em:'🌶',cat:'Sayuran', hK:38000,hP:18000,trend:'up',  ch:12.5,hist:[24000,26000,29000,33000,36000,38000],stok:820, loc:'Solok'},
@@ -200,7 +200,7 @@ var FINANCING = [
 ];
 
 var LOGISTIK = [
-  {no:'PNH-0812',kom:'Beras 500 kg', dari:'Karawang',ke:'Jakarta Pusat',status:'dalam_perjalanan',prog:65,eta:'Hari ini 14.00',driver:'Pak Rohmat',plat:'B 3841 FX'},
+  {no:'PNH-0812',kom:'Beras 500 kg', dari:'Cilangkap',ke:'Jakarta Pusat',status:'dalam_perjalanan',prog:65,eta:'Hari ini 14.00',driver:'Pak Rohmat',plat:'B 3841 FX'},
   {no:'PNH-0813',kom:'Cabai 300 kg', dari:'Solok',   ke:'Padang',       status:'menunggu_pickup', prog:10,eta:'Besok 08.00',   driver:'Mencari',   plat:'—'},
 ];
 
@@ -351,7 +351,7 @@ function selectSupplier(el,idx){
     btn.style.border='1.5px solid #e2e8f0';btn.style.background='#fff';
   });
   el.style.border='1.5px solid #16a34a';el.style.background='#f0fdf4';
-  var suppliers=['KUD Karya Tani — Karawang','BUMDes Makmur Jaya — Kediri','KUD Harapan Tani — Grobogan'];
+  var suppliers=['KKMP Cilangkap — Cilangkap','BUMDes Makmur Jaya — Kediri','KUD Harapan Tani — Grobogan'];
   var hargaList=[0.92,0.95,0.97];
   document.getElementById('f-selected-supplier').value=suppliers[idx];
   document.getElementById('f-selected-harga').value=Math.round(14000*hargaList[idx]);
@@ -423,7 +423,7 @@ function loadingScreen(title,msg){
 
 /* ═══ AI DEFAULTS — pre-fills forms with AI recommendations (editable) ═══ */
 var AI_DEFAULTS = {
-  distribusi:        {'f-kom':'Beras Premium IR64','f-vol':'280','f-dest':'NTT','f-kop':'KUD Karya Tani — Karawang','f-tgl':new Date().toISOString().slice(0,10)},
+  distribusi:        {'f-kom':'Beras Premium IR64','f-vol':'280','f-dest':'NTT','f-kop':'KKMP Cilangkap — Cilangkap','f-tgl':new Date().toISOString().slice(0,10)},
   forecast:          {'f-action':'Siapkan sourcing alternatif (Jateng)'},
   kirim_anggota:     {},
   konfirmasi_tanam:  {'f-lahan':'Blok A+B — 2.5 Ha','f-varietas':'Ciherang (Rekomendasi AI)','f-benih':'50','f-tgl':new Date().toISOString().slice(0,10)},
@@ -434,10 +434,95 @@ var AI_DEFAULTS = {
   buat_preorder:     {'f-kom':'Bawang Merah Brebes','f-vol':'50','f-harga':'28000','f-jadwal':'Segera (1-2 minggu)','f-kota':'Jakarta Selatan'},
   export_laporan:    {'f-jenis':'Laporan Distribusi Bulanan','f-periode':'Januari 2026','f-format':'PDF (Laporan Resmi)'},
   rekrutmen:         {'f-rw':'RW 01 - RW 05 (Prioritas Tinggi)','f-metode':'Kombinasi','f-target':'200','f-timeline':'3 bulan'},
+  minta_distribusi:  {'f-kom':'Beras Premium IR64','f-vol':'250','f-asal':'Jawa Barat'},
+  tawarkan_distribusi:{'f-kom':'Beras Premium IR64','f-vol':'150','f-dest':'NTT'},
 };
 
 /* ═══ FLOWS (identical to v3) ═══ */
 var FLOWS = {};
+
+/* FLOW: Minta Pasokan (Koperasi/Pemerintah) */
+FLOWS['minta_distribusi'] = [
+  function(d,s,t){
+    return mHeader('Minta Pasokan Distribusi',s,t)+
+    '<div class="mo-body">'+
+      '<div style="background:#fef9c3;border:1px solid #fde047;border-radius:12px;padding:12px;margin-bottom:14px">'+
+        '<div style="font-size:12px;font-weight:700;color:#854d0e;margin-bottom:8px">🤖 AI Deteksi Defisit '+esc(d._region||'Lokal')+'</div>'+
+        infoRow('Disarankan','Beras Premium IR64','#854d0e')+
+        infoRow('Est. Kebutuhan','250 ton dalam 7 hari','')+
+        infoRow('Ketersediaan Surplus','Jawa Barat (12.500 ton)','')+
+      '</div>'+
+      fieldHtml('Komoditas yang Diminta','f-kom','select',true,'',['Beras Premium IR64','Jagung Pipil Kuning','Kedelai Non-GMO','Bawang Merah Brebes'])+
+      fieldHtml('Volume (ton)','f-vol','number',true,'Contoh: 250','','')+
+      fieldHtml('Koperasi/Wilayah Asal (Surplus)','f-asal','select',true,'',['Jawa Barat','Jawa Timur','Sumatera Selatan','Sulawesi Selatan'])+
+    '</div>'+
+    mFooter(null,'Cek Rute Logistik AI →','mo-load-btn');
+  },
+  function(d,s,t){
+    var vol = d['f-vol']||'250';
+    var asal = d['f-asal']||'Jawa Barat';
+    var biayakg = asal==='Jawa Barat'?1200:asal==='Jawa Timur'?1500:2500;
+    return mHeader('Analisis Logistik AI',s,t)+
+    '<div class="mo-body">'+
+      '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:12px;margin-bottom:14px">'+
+        '<div style="font-size:12px;font-weight:700;color:#15803d;margin-bottom:8px">Rute Optimal: '+asal+' → '+esc(d._region||'Wilayah Defisit')+'</div>'+
+        infoRow('Volume Terkirim',vol+' ton','#15803d')+
+        infoRow('Estimasi Tiba (ETA)','3-4 hari kerja','')+
+        infoRow('Biaya Logistik',fmtRp(biayakg)+' per kg','')+
+        infoRow('Emisi Karbon (Opt.)','-14% (Sharing rute)','#15803d')+
+      '</div>'+
+    '</div>'+
+    mFooter(null,'Ajukan Permintaan Sekarang', 'mo-submit', 'mo-prev');
+  },
+  function(d,s,t){
+    var vol = d['f-vol']||'250', asal = d['f-asal']||'Jawa Barat', kom=d['f-kom']||'Beras';
+    var no = 'REQ-DST-'+String(Math.floor(Math.random()*90000)+10000);
+    return successScreen('Permintaan Pasokan Terkirim!','Sistem telah mengirimkan request otomatis ke koordinator wilayah '+asal+'.',
+      [['No. Permintaan',no],['Komoditas',kom],['Volume',vol+' ton'],['Asal',asal],['Status','Menunggu Konfirmasi']],'🛒');
+  }
+];
+
+/* FLOW: Tawarkan Stok (Koperasi/Pemerintah) */
+FLOWS['tawarkan_distribusi'] = [
+  function(d,s,t){
+    return mHeader('Tawarkan Surplus Stok',s,t)+
+    '<div class="mo-body">'+
+      '<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:12px;margin-bottom:14px">'+
+        '<div style="font-size:12px;font-weight:700;color:#1d4ed8;margin-bottom:8px">🤖 AI Deteksi Surplus '+esc(d._region||'Lokal')+'</div>'+
+        infoRow('Potensi Oversupply','150 ton (Risiko harga jatuh)','#1d4ed8')+
+        infoRow('Aksi Disarankan','Kirim ke NTT (Defisit kritis)','')+
+      '</div>'+
+      fieldHtml('Komoditas Ditawarkan','f-kom','select',true,'',['Beras Premium IR64','Jagung Pipil Kuning','Cabai Merah Keriting'])+
+      fieldHtml('Volume Tersedia (ton)','f-vol','number',true,'Contoh: 150','','')+
+      fieldHtml('Wilayah Target (Defisit)','f-dest','select',true,'',['NTT','Papua','Kalimantan Tengah','Kota Depok'])+
+    '</div>'+
+    mFooter(null,'Simulasi Dampak AI →','mo-load-btn');
+  },
+  function(d,s,t){
+    var vol = d['f-vol']||'150';
+    var dest = d['f-dest']||'NTT';
+    return mHeader('Proyeksi Dampak Distribusi',s,t)+
+    '<div class="mo-body">'+
+      '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:12px;margin-bottom:14px">'+
+        '<div style="font-size:12px;font-weight:700;color:#15803d;margin-bottom:8px">Dampak di Wilayah '+dest+'</div>'+
+        infoRow('Defisit Berkurang','85% (Aman untuk 14 hari)','#15803d')+
+        infoRow('Proyeksi Harga Lokal','Turun -5% s/d -8%','#15803d')+
+      '</div>'+
+      '<div style="background:#fff5f5;border:1px solid #fecaca;border-radius:12px;padding:12px;margin-bottom:14px">'+
+        '<div style="font-size:12px;font-weight:700;color:#dc2626;margin-bottom:8px">Dampak di Wilayah Asal</div>'+
+        infoRow('Stok Tersisa','Aman (Diatas batas buffer)','')+
+        infoRow('Risiko Harga Jatuh','Dihindari (Harga stabil)','#15803d')+
+      '</div>'+
+    '</div>'+
+    mFooter(null,'Publish Penawaran Stok', 'mo-submit', 'mo-prev');
+  },
+  function(d,s,t){
+    var vol = d['f-vol']||'150', dest = d['f-dest']||'NTT', kom=d['f-kom']||'Beras';
+    var no = 'OFF-DST-'+String(Math.floor(Math.random()*90000)+10000);
+    return successScreen('Penawaran Stok Dipublikasi!','Sistem telah mempublikasikan penawaran surplus ke wilayah '+dest+'.',
+      [['No. Penawaran',no],['Komoditas',kom],['Volume',vol+' ton'],['Target',dest],['Status','Aktif di Bursa Inter-Wilayah']],'🚀');
+  }
+];
 
 FLOWS['distribusi'] = [
   function(d,s,t){
@@ -449,14 +534,14 @@ FLOWS['distribusi'] = [
         infoRow('Stok NTT','8 hari tersisa (kritis)','#dc2626')+
         infoRow('Surplus Jabar','12.500 ton siap','#15803d')+
         infoRow('Confidence AI','91%','')+
-        infoRow('Rute Optimal','Karawang → Tj. Priok → NTT','')+
+        infoRow('Rute Optimal','Cilangkap → Tj. Priok → NTT','')+
       '</div>'+
       '<div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:10px">Isi Rencana Distribusi</div>'+
       fieldHtml('Komoditas','f-kom','select',true,'',['Beras Premium IR64','Jagung Pipil Kuning','Kedelai Non-GMO','Beras SPHP'])+
       fieldHtml('Volume (ton)','f-vol','number',true,'Contoh: 280','','')+
       fieldHtml('Wilayah Tujuan','f-dest','select',true,'',['NTT','Papua','Kalimantan Tengah','Kota Depok'])+
       fieldHtml('Tanggal Mulai','f-tgl','date',true,'','',new Date().toISOString().slice(0,10))+
-      fieldHtml('Koperasi Pengirim','f-kop','select',true,'',['KUD Karya Tani — Karawang','KUD Harapan Tani — Grobogan','BUMDes Makmur Jaya — Kediri'])+
+      fieldHtml('Koperasi Pengirim','f-kop','select',true,'',['KKMP Cilangkap — Cilangkap','KUD Harapan Tani — Grobogan','BUMDes Makmur Jaya — Kediri'])+
     '</div>'+
     mFooter(null,'Hitung Rute AI →','mo-load-btn');
   },
@@ -467,7 +552,7 @@ FLOWS['distribusi'] = [
       '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:12px;margin-bottom:12px">'+
         '<div style="font-size:12px;font-weight:700;color:#15803d;margin-bottom:8px">🤖 Rute Distribusi Optimal</div>'+
         infoRow('Algoritma','MILP + VRP Solver','')+
-        infoRow('Rute','Karawang → Pelabuhan Tj.Priok → '+dest,'')+
+        infoRow('Rute','Cilangkap → Pelabuhan Tj.Priok → '+dest,'')+
         infoRow('Volume Terkonfirmasi',vol+' ton','#15803d')+
         infoRow('Estimasi Waktu','4-5 hari kerja','')+
         infoRow('Biaya Logistik',fmtRp(parseInt(vol||280)*850000),'#1e293b')+
@@ -486,7 +571,7 @@ FLOWS['distribusi'] = [
   function(d,s,t){
     var vol=d['f-vol']||'280',dest=d['f-dest']||'NTT',no='PNH-DIST-'+String(Math.floor(Math.random()*90000)+10000);
     return successScreen('Order Distribusi Dibuat!','Rencana distribusi berhasil dibuat dan diteruskan ke tim logistik.',
-      [['No. Order',no],['Komoditas',d['f-kom']||'Beras Premium IR64'],['Volume',vol+' ton'],['Tujuan',dest],['Koperasi Pengirim',d['f-kop']||'KUD Karya Tani'],['Status','Menunggu konfirmasi driver'],['ETA','4-5 hari kerja']],'🚛');
+      [['No. Order',no],['Komoditas',d['f-kom']||'Beras Premium IR64'],['Volume',vol+' ton'],['Tujuan',dest],['Koperasi Pengirim',d['f-kop']||'KKMP Cilangkap'],['Status','Menunggu konfirmasi driver'],['ETA','4-5 hari kerja']],'🚛');
   }
 ];
 FLOWS['forecast'] = [
@@ -569,7 +654,7 @@ FLOWS['konfirmasi_tanam'] = [
     mFooter(null,'Kirim ke Koperasi →','mo-submit');
   },
   function(d,s,t){
-    return successScreen('Rencana Tanam Dikonfirmasi!','Data rencana tanam Anda berhasil dikirim ke KUD Karya Tani.',
+    return successScreen('Rencana Tanam Dikonfirmasi!','Data rencana tanam Anda berhasil dikirim ke KKMP Cilangkap.',
       [['Lahan',d['f-lahan']||'Blok A'],['Varietas',d['f-varietas']||'Ciherang'],['Jumlah Benih',d['f-benih']||'50'+' kg'],['Mulai Tanam',d['f-tgl']||'—'],['No. Rencana','TNM-2026-'+String(Math.floor(Math.random()*9000)+1000)]],'🌾');
   }
 ];
@@ -728,7 +813,7 @@ FLOWS['buat_preorder'] = [
   function(d,s,t){
     var harga=parseInt(d['f-harga'])||14000,vol=d['f-vol']||'50';
     var suppliers=[
-      {nama:'KUD Karya Tani — Karawang',harga:Math.round(harga*0.92),rating:4.8,match:94},
+      {nama:'KKMP Cilangkap — Cilangkap',harga:Math.round(harga*0.92),rating:4.8,match:94},
       {nama:'BUMDes Makmur Jaya — Kediri',harga:Math.round(harga*0.95),rating:4.6,match:87},
       {nama:'KUD Harapan Tani — Grobogan',harga:Math.round(harga*0.97),rating:4.5,match:79},
     ];
@@ -757,7 +842,7 @@ FLOWS['buat_preorder'] = [
       '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px;margin-bottom:12px">'+
         infoRow('Komoditas',d['f-kom']||'Beras Premium IR64','')+infoRow('Volume',vol+' ton','')+
         infoRow('Harga per kg',fmtRp(harga),'#15803d')+infoRow('Total Nilai',fmtRp(total),'#15803d')+
-        infoRow('Supplier',d['f-supplier']||'KUD Karya Tani','')+
+        infoRow('Supplier',d['f-supplier']||'KKMP Cilangkap','')+
       '</div>'+
       fieldHtml('Nama PIC Pembelian','f-pic','text',true,'Nama PIC yang bertanggung jawab','','')+
     '</div>'+
@@ -767,7 +852,7 @@ FLOWS['buat_preorder'] = [
     var vol=d['f-vol']||'50',harga=parseInt(d['f-supplier-harga'])||12000;
     var kontrakNo='PNH-PO-'+String(Math.floor(Math.random()*900000)+100000);
     return successScreen('Pre-order Dikonfirmasi! 🎉','Kontrak digital berhasil dibuat dan dikirim ke supplier.',
-      [['No. Kontrak',kontrakNo],['Komoditas',d['f-kom']||'Beras'],['Volume',vol+' ton'],['Supplier',d['f-supplier']||'KUD Karya Tani'],['Total Nilai',fmtRp(parseInt(vol)*harga*1000)],['Status','Kontrak Aktif ✓']],'📦');
+      [['No. Kontrak',kontrakNo],['Komoditas',d['f-kom']||'Beras'],['Volume',vol+' ton'],['Supplier',d['f-supplier']||'KKMP Cilangkap'],['Total Nilai',fmtRp(parseInt(vol)*harga*1000)],['Status','Kontrak Aktif ✓']],'📦');
   }
 ];
 FLOWS['export_laporan'] = [
@@ -1232,12 +1317,21 @@ function pageData(){
           '<div class="sec-hdr"><div class="sec-title">Peta Wilayah</div></div>'+
           REGIONS.map(function(r){
             var cls=r.status==='surplus'?'hm-surplus':r.status==='defisit'?'hm-defisit':'hm-seimbang';
+            var actionBtn='';
+            if(u.role==='koperasi'||u.role==='pemerintah'){
+              if(r.status==='surplus'){
+                actionBtn='<button class="tap" onclick="M.open(\'minta_distribusi\',{_region:\''+esc(r.name)+'\'})" style="margin-top:6px;width:100%;background:#ffffff99;border:1px solid #14532d40;color:#14532d;font-weight:700;font-size:10px;padding:4px;border-radius:6px">🛒 Minta Pasokan</button>';
+              } else if(r.status==='defisit'){
+                actionBtn='<button class="tap" onclick="M.open(\'tawarkan_distribusi\',{_region:\''+esc(r.name)+'\'})" style="margin-top:6px;width:100%;background:#ffffff99;border:1px solid #7f1d1d40;color:#7f1d1d;font-weight:700;font-size:10px;padding:4px;border-radius:6px">🚚 Tawarkan Stok</button>';
+              }
+            }
             return '<div class="hm-cell '+cls+'" style="margin-bottom:8px">'+
               '<div style="display:flex;justify-content:space-between;align-items:center">'+
-                '<div><div>'+esc(r.name)+'</div><div style="font-size:10px;opacity:.7;margin-top:1px">'+esc(r.commod)+'</div></div>'+
+                '<div><div style="font-size:13px">'+esc(r.name)+'</div><div style="font-size:11px;opacity:.7;margin-top:1px">'+esc(r.commod)+'</div></div>'+
                 stBadge(r.status)+
               '</div>'+
               (r.vol?'<div style="font-size:14px;font-weight:800;font-family:DM Mono,monospace;margin-top:4px">'+fmt(r.vol)+' ton</div>':'<div style="font-size:11px;margin-top:4px">Stabil</div>')+
+              actionBtn+
             '</div>';
           }).join('')+
         '</div>'+
@@ -1251,16 +1345,28 @@ function pageWilayah(){
     '<div class="grid-3">'+
     REGIONS.map(function(r){
       var cls=r.status==='surplus'?{bg:'#f0fdf4',brd:'#bbf7d0',tc:'#15803d',lc:'#dcfce7'}:r.status==='defisit'?{bg:'#fff5f5',brd:'#fecaca',tc:'#dc2626',lc:'#fee2e2'}:{bg:'#fffbeb',brd:'#fde68a',tc:'#d97706',lc:'#fef9c3'};
+      var actionBtn='';
+      if(u.role==='koperasi'||u.role==='pemerintah'){
+        if(r.status==='surplus'){
+          actionBtn='<button class="tap" onclick="M.open(\'minta_distribusi\',{_region:\''+esc(r.name)+'\'})" style="width:100%;background:'+cls.lc+';border:1px solid '+cls.brd+';color:'+cls.tc+';font-weight:700;font-size:12px;padding:8px;border-radius:10px;transition:all 0.15s" onmouseover="this.style.background=\'#ffffff\'" onmouseout="this.style.background=\''+cls.lc+'\'">🛒 Minta Pasokan</button>';
+        } else if(r.status==='defisit'){
+          actionBtn='<button class="tap" onclick="M.open(\'tawarkan_distribusi\',{_region:\''+esc(r.name)+'\'})" style="width:100%;background:'+cls.lc+';border:1px solid '+cls.brd+';color:'+cls.tc+';font-weight:700;font-size:12px;padding:8px;border-radius:10px;transition:all 0.15s" onmouseover="this.style.background=\'#ffffff\'" onmouseout="this.style.background=\''+cls.lc+'\'">🚚 Tawarkan Stok</button>';
+        }
+      } else {
+        if(r.status==='defisit'){
+            actionBtn='<button class="tap" data-flow="distribusi" style="width:100%;background:'+cls.brd+';color:'+cls.tc+';font-size:11px;font-weight:700;padding:6px;border-radius:8px">Distribusi Sekarang →</button>';
+        } else {
+            actionBtn='<div style="background:'+cls.lc+';border-radius:8px;padding:6px;text-align:center;font-size:11px;color:'+cls.tc+';font-weight:600">'+esc(r.status==='surplus'?'Siap Distribusi':'Terpantau')+'</div>';
+        }
+      }
       return '<div style="background:'+cls.bg+';border:1px solid '+cls.brd+';border-radius:16px;padding:16px">'+
         '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">'+
           '<div style="font-size:15px;font-weight:700;color:'+cls.tc+'">'+esc(r.name)+'</div>'+
           stBadge(r.status)+
         '</div>'+
         '<div style="font-size:12px;color:#64748b;margin-bottom:8px">'+esc(r.commod)+'</div>'+
-        (r.vol?'<div style="font-size:22px;font-weight:800;color:'+cls.tc+';font-family:DM Mono,monospace;margin-bottom:6px">'+fmt(r.vol)+' ton</div>':'<div style="font-size:14px;color:#64748b;margin-bottom:6px">Stabil</div>')+
-        (r.status==='defisit'?
-          '<button class="tap" data-flow="distribusi" style="width:100%;background:'+cls.brd+';color:'+cls.tc+';font-size:11px;font-weight:700;padding:6px;border-radius:8px">Distribusi Sekarang →</button>':
-          '<div style="background:'+cls.lc+';border-radius:8px;padding:6px;text-align:center;font-size:11px;color:'+cls.tc+';font-weight:600">'+esc(r.status==='surplus'?'Siap Distribusi':'Terpantau')+'</div>')+
+        (r.vol?'<div style="font-size:22px;font-weight:800;color:'+cls.tc+';font-family:DM Mono,monospace;margin-bottom:12px">'+fmt(r.vol)+' ton</div>':'<div style="font-size:14px;color:#64748b;margin-bottom:12px">Stabil</div>')+
+        actionBtn+
       '</div>';
     }).join('')+
     '</div>';
@@ -1419,3 +1525,4 @@ renderLogin();
 </script>
 </body>
 </html>
+

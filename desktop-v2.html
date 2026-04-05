@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8"/>
@@ -132,9 +132,9 @@ input,button{font-family:inherit;border:none;cursor:pointer;background:none}
 <script>
 /* ═══ DATA ═══ */
 const USERS = [
-  {id:1,role:'koperasi',   name:'KUD Karya Tani Karawang',   init:'KT',loc:'Karawang, Jawa Barat',  anggota:245,modal:2400000000,distribusi:48200000,matchAktif:3,join:'Jun 2021'},
-  {id:2,role:'petani',     name:'Pak Hendra Susanto',         init:'HS',loc:'Karawang, Jawa Barat',  lahan:'2.5 Ha',saldo:4250000,koperasi:'KUD Karya Tani',rating:4.8,join:'Mar 2022'},
-  {id:3,role:'pemerintah', name:'Dinas Ketahanan Pangan',     init:'DP',loc:'Kab. Karawang',          jabatan:'Admin Pangan Daerah',wilayah:8,join:'Sep 2023'},
+  {id:1,role:'koperasi',   name:'KKMP Cilangkap',   init:'MP',loc:'Cilangkap, Kota Depok',  anggota:122,modal:2400000000,distribusi:48200000,matchAktif:3,join:'Jun 2021'},
+  {id:2,role:'petani',     name:'Pak Hendra Susanto',         init:'HS',loc:'Cilangkap, Kota Depok',  lahan:'2.5 Ha',saldo:4250000,koperasi:'KKMP Cilangkap',rating:4.8,join:'Mar 2022'},
+  {id:3,role:'pemerintah', name:'Dinas Ketahanan Pangan',     init:'DP',loc:'Kota Depok',          jabatan:'Admin Pangan Daerah',wilayah:8,join:'Sep 2023'},
   {id:4,role:'pembeli',    name:'PT Sumber Pangan Nusantara', init:'SP',loc:'Jakarta Selatan',         tipe:'Retail / B2B',saldo:48750000,join:'Jan 2023'},
   {id:5,role:'system_admin', name:'Super Admin / Regional Manager', init:'SA',loc:'Pusat Pangan Nasional', jabatan:'Otoritas Penuh',  join:'Jan 2020'},
 ];
@@ -145,7 +145,7 @@ const ROLE_ACCENT= {koperasi:'#5ba3f5',petani:'#4ade80',pemerintah:'#c084fc',pem
 const ROLE_DARK  = {koperasi:'#1e3a5f',petani:'#14301a',pemerintah:'#2d1b50',pembeli:'#2d1b00',system_admin:'#7f1d1d'};
 
 const COMMODITIES = [
-  {id:1,name:'Beras Premium IR64',  em:'🌾',cat:'Padi',    unit:'kg',hK:14500,hP:5200, trend:'up',  ch:2.1, hist:[13200,13500,13800,14000,14200,14500],stok:12500,loc:'Karawang',rating:4.8,sold:2840,cert:'Organik, SNI'},
+  {id:1,name:'Beras Premium IR64',  em:'🌾',cat:'Padi',    unit:'kg',hK:14500,hP:5200, trend:'up',  ch:2.1, hist:[13200,13500,13800,14000,14200,14500],stok:12500,loc:'Cilangkap',rating:4.8,sold:2840,cert:'Organik, SNI'},
   {id:2,name:'Jagung Pipil Kuning', em:'🌽',cat:'Palawija',unit:'kg',hK:5800, hP:2100, trend:'down',ch:1.5, hist:[6200,6100,6050,5950,5850,5800],     stok:8200, loc:'Kediri',  rating:4.6,sold:5120,cert:'SNI'},
   {id:3,name:'Kedelai Non-GMO',     em:'🫘',cat:'Palawija',unit:'kg',hK:12000,hP:8500, trend:'up',  ch:3.8, hist:[10500,10800,11000,11200,11600,12000],stok:3400, loc:'Grobogan',rating:4.9,sold:1240,cert:'Organik, Non-GMO'},
   {id:4,name:'Cabai Merah Keriting',em:'🌶',cat:'Sayuran', unit:'kg',hK:38000,hP:18000,trend:'up',  ch:12.5,hist:[24000,26000,29000,33000,36000,38000],stok:820,  loc:'Solok',   rating:4.7,sold:320, cert:'—'},
@@ -186,14 +186,14 @@ const ANGGOTA = [
 ];
 
 const PREORDERS = [
-  {kom:'Beras Premium IR64',vol:50, sat:'ton',harga:13500,status:'confirmed',petani:'KUD Karya Tani',  eta:'12 Feb 2026',nilai:675000000,conf:94,aiMatch:false},
+  {kom:'Beras Premium IR64',vol:50, sat:'ton',harga:13500,status:'confirmed',petani:'KKMP Cilangkap',  eta:'12 Feb 2026',nilai:675000000,conf:94,aiMatch:false},
   {kom:'Kedelai Non-GMO',   vol:20, sat:'ton',harga:11000,status:'pending',  petani:'KUD Harapan Tani',eta:'5 Mar 2026', nilai:220000000,conf:78,aiMatch:false},
   {kom:'Bawang Merah',      vol:15, sat:'ton',harga:25000,status:'ai_match', petani:'KUD Bawang Mas',  eta:'18 Feb 2026',nilai:375000000,conf:87,aiMatch:true},
   {kom:'Jagung Pipil',      vol:100,sat:'ton',harga:5200, status:'pending',  petani:'BUMDes Makmur',   eta:'1 Apr 2026', nilai:520000000,conf:65,aiMatch:false},
 ];
 
 const LOGISTIK = [
-  {no:'PNH-0812',kom:'Beras 500 kg',   dari:'Karawang',ke:'Jakarta', status:'dalam_perjalanan',prog:65, eta:'Hari ini 14.00',   driver:'Pak Rohmat',plat:'B 3841 FX'},
+  {no:'PNH-0812',kom:'Beras 500 kg',   dari:'Cilangkap',ke:'Jakarta', status:'dalam_perjalanan',prog:65, eta:'Hari ini 14.00',   driver:'Pak Rohmat',plat:'B 3841 FX'},
   {no:'PNH-0811',kom:'Jagung 2.000 kg',dari:'Kediri',  ke:'Surabaya',status:'selesai',          prog:100,eta:'Kemarin 09.30',   driver:'Pak Sugeng', plat:'L 1234 AB'},
   {no:'PNH-0813',kom:'Cabai 300 kg',   dari:'Solok',   ke:'Padang',  status:'menunggu_pickup',  prog:10, eta:'Besok 08.00',     driver:'Mencari',    plat:'—'},
 ];
@@ -232,7 +232,7 @@ const CILANGKAP_SOR = {
 };
 
 const GUDANG = [
-  {nama:'Gudang Karawang Utara',lok:'Karawang',kap:500,isi:340,persen:68,kom:'Beras, Jagung',kondisi:'Baik',audit:'2 Feb 2026'},
+  {nama:'Gudang Cilangkap Utara',lok:'Cilangkap',kap:500,isi:340,persen:68,kom:'Beras, Jagung',kondisi:'Baik',audit:'2 Feb 2026'},
   {nama:'Gudang Transit Priok',lok:'Jakarta',kap:1200,isi:890,persen:74,kom:'Multi-komoditas',kondisi:'Baik',audit:'28 Jan 2026'},
   {nama:'Gudang Kupang',lok:'NTT',kap:300,isi:45,persen:15,kom:'Beras',kondisi:'Perlu Perbaikan',audit:'15 Jan 2026'},
   {nama:'Gudang Jayapura',lok:'Papua',kap:200,isi:28,persen:14,kom:'Beras, Kedelai',kondisi:'Cukup',audit:'10 Jan 2026'},
@@ -243,8 +243,8 @@ const BUYER_REQ = [
   {pembeli:'UD Berkah Tani',kom:'Jagung Pipil',vol:'30 ton',harga:5500,deadline:'1 Mar 2026'},
 ];
 const OPS_LOG = [
-  {tgl:'28 Jan 2026',rute:'Karawang → Jakarta',vol:'500 kg',status:'selesai',feedback:'Tepat waktu, kualitas baik'},
-  {tgl:'15 Jan 2026',rute:'Karawang → Bandung',vol:'1.2 ton',status:'selesai',feedback:'Delay 2 jam'},
+  {tgl:'28 Jan 2026',rute:'Cilangkap → Jakarta',vol:'500 kg',status:'selesai',feedback:'Tepat waktu, kualitas baik'},
+  {tgl:'15 Jan 2026',rute:'Cilangkap → Bandung',vol:'1.2 ton',status:'selesai',feedback:'Delay 2 jam'},
   {tgl:'5 Jan 2026',rute:'Kediri → Surabaya',vol:'2 ton',status:'selesai',feedback:'Tepat waktu'},
 ];
 const BUFFER_NASIONAL = [
@@ -597,7 +597,7 @@ function startTrace() {
   if(!logBox) return;
   const logs = [
     "[PREDICT] Analyzing Jabar-NTT supply chain...",
-    "[AGENT] Matching surplus Karawang to NTT demand...",
+    "[AGENT] Matching surplus Cilangkap to NTT demand...",
     "[MODEL] LSTM running price forecast (Epoch 42)...",
     "[DATA] Ingesting SimKopdes weekly transaction...",
     "[OPTI] Simplex algorithm finding min-cost path...",
@@ -1280,7 +1280,7 @@ function pageOperasi() {
   /* PEMBELI */
   else {
     if(oTab==='katalog') {
-      var rows=[{k:'KUD Karya Tani',l:'Karawang',km:'Beras, Jagung',s:'12.500 ton',r:4.8,c:'Organik, SNI'},{k:'KUD Harapan',l:'Kediri',km:'Jagung, Kedelai',s:'8.200 ton',r:4.6,c:'SNI'},{k:'KUD Bawang Mas',l:'Brebes',km:'Bawang Merah',s:'4.200 ton',r:4.5,c:'SNI'}].map(function(s){return '<tr><td style="font-weight:600">'+esc(s.k)+'</td><td>'+s.l+'</td><td>'+s.km+'</td><td class="mono">'+s.s+'</td><td>⭐ '+s.r+'</td><td><span class="badge bg-green">'+s.c+'</span></td><td><button class="tap" style="background:'+a+';color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px" onclick="manualAction(\'buat_po\',\''+esc(s.k)+'\')">→ PO Manual</button></td></tr>';}).join('');
+      var rows=[{k:'KKMP Cilangkap',l:'Cilangkap',km:'Beras, Jagung',s:'12.500 ton',r:4.8,c:'Organik, SNI'},{k:'KUD Harapan',l:'Kediri',km:'Jagung, Kedelai',s:'8.200 ton',r:4.6,c:'SNI'},{k:'KUD Bawang Mas',l:'Brebes',km:'Bawang Merah',s:'4.200 ton',r:4.5,c:'SNI'}].map(function(s){return '<tr><td style="font-weight:600">'+esc(s.k)+'</td><td>'+s.l+'</td><td>'+s.km+'</td><td class="mono">'+s.s+'</td><td>⭐ '+s.r+'</td><td><span class="badge bg-green">'+s.c+'</span></td><td><button class="tap" style="background:'+a+';color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px" onclick="manualAction(\'buat_po\',\''+esc(s.k)+'\')">→ PO Manual</button></td></tr>';}).join('');
       content = '<div class="panel flush"><div style="padding:16px 20px;border-bottom:1px solid #e2e8f0"><div class="sec-title">Katalog Supplier Koperasi</div></div><table class="data-table"><thead><tr><th>Koperasi</th><th>Lokasi</th><th>Komoditas</th><th>Stok</th><th>Rating</th><th>Sertifikasi</th><th>Aksi</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
     } else if(oTab==='po_aktif') {
       var rows=PREORDERS.map(function(p){return '<tr><td style="font-weight:600">'+esc(p.kom)+'</td><td>'+p.vol+' '+p.sat+'</td><td class="mono" style="font-weight:700">'+fmtRp(p.harga)+'</td><td class="mono">'+fmtK(p.nilai)+'</td><td>'+esc(p.petani)+'</td><td>'+p.eta+'</td><td>'+statusBadge(p.status)+'</td><td><div style="display:flex;gap:4px"><button class="tap" style="color:'+a+';font-size:10px;border:1px solid '+a+'30;padding:3px 8px;border-radius:6px" onclick="manualAction(\'ubah_po\',\''+esc(p.kom)+'\')">✎</button><button class="tap" style="color:#ef4444;font-size:10px;border:1px solid #fecaca;padding:3px 8px;border-radius:6px" onclick="manualAction(\'batalkan_po\',\''+esc(p.kom)+'\')">✗</button></div></td></tr>';}).join('');
@@ -1535,7 +1535,7 @@ function executeAIAction(name, recData) {
 
   if (name === 'Buat Rencana Distribusi') {
     var gudangRows = GUDANG.map(function(g){var pc=g.persen<30?'#dc2626':'#16a34a';return '<tr><td style="font-weight:600">'+esc(g.nama)+'</td><td>'+g.lok+'</td><td class="mono">'+fmt(g.isi)+'/'+fmt(g.kap)+' ton</td><td><div style="display:flex;align-items:center;gap:6px"><span class="mono" style="font-weight:700;color:'+pc+'">'+g.persen+'%</span>'+confBar(g.persen,pc)+'</div></td></tr>';}).join('');
-    var ruteRows = [{r:'Karawang \u2192 Priok \u2192 Kupang (Laut)',w:'5 hari',c:'Rp 42jt',rsk:'Rendah',rec:true},{r:'Karawang \u2192 Surabaya \u2192 Kupang',w:'7 hari',c:'Rp 38jt',rsk:'Sedang',rec:false},{r:'Karawang \u2192 Kupang (Udara)',w:'1 hari',c:'Rp 185jt',rsk:'Rendah',rec:false}].map(function(x){return '<tr style="background:'+(x.rec?'#f0fdf4':'transparent')+'"><td style="font-weight:'+(x.rec?'700':'400')+'">'+x.r+(x.rec?' <span class="badge bg-green">REKOMENDASI</span>':'')+'</td><td class="mono">'+x.w+'</td><td class="mono">'+x.c+'</td><td>'+x.rsk+'</td></tr>';}).join('');
+    var ruteRows = [{r:'Cilangkap \u2192 Priok \u2192 Kupang (Laut)',w:'5 hari',c:'Rp 42jt',rsk:'Rendah',rec:true},{r:'Cilangkap \u2192 Surabaya \u2192 Kupang',w:'7 hari',c:'Rp 38jt',rsk:'Sedang',rec:false},{r:'Cilangkap \u2192 Kupang (Udara)',w:'1 hari',c:'Rp 185jt',rsk:'Rendah',rec:false}].map(function(x){return '<tr style="background:'+(x.rec?'#f0fdf4':'transparent')+'"><td style="font-weight:'+(x.rec?'700':'400')+'">'+x.r+(x.rec?' <span class="badge bg-green">REKOMENDASI</span>':'')+'</td><td class="mono">'+x.w+'</td><td class="mono">'+x.c+'</td><td>'+x.rsk+'</td></tr>';}).join('');
     b = '<div style="font-size:13px;font-weight:700;margin-bottom:10px">\ud83d\udcca Data Pendukung Keputusan</div>'+
     '<div style="font-size:12px;color:#6b7280;margin-bottom:12px">AI merekomendasikan distribusi 280 ton beras ke NTT. Berikut data gudang terkait:</div>'+
     '<table class="data-table" style="margin-bottom:16px"><thead><tr><th>Gudang</th><th>Lokasi</th><th>Kapasitas</th><th>Utilisasi</th></tr></thead><tbody>'+gudangRows+'</tbody></table>'+
@@ -1761,3 +1761,4 @@ renderLogin();
 </script>
 </body>
 </html>
+

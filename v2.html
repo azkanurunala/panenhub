@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8"/>
@@ -117,9 +117,9 @@ input,button,select{font-family:inherit;border:none;background:none;cursor:point
 <script>
 /* ═══════════════════════════════════ */
 const USERS = [
-  {id:1, role:'koperasi',   name:'KUD Karya Tani Karawang',  init:'KT', loc:'Karawang, Jawa Barat',  anggota:245, modal:2400000000, distribusi:48200000, matchAktif:3, join:'Jun 2021'},
-  {id:2, role:'petani',     name:'Pak Hendra Susanto',        init:'HS', loc:'Karawang, Jawa Barat',  lahan:'2.5 Ha', saldo:4250000, koperasi:'KUD Karya Tani', rating:4.8, join:'Mar 2022'},
-  {id:3, role:'pemerintah', name:'Dinas Ketahanan Pangan',    init:'DP', loc:'Kab. Karawang',          jabatan:'Admin Pangan Daerah', wilayah:8, join:'Sep 2023'},
+  {id:1, role:'koperasi',   name:'KKMP Cilangkap',  init:'MP', loc:'Cilangkap, Kota Depok',  anggota:122, modal:2400000000, distribusi:48200000, matchAktif:3, join:'Jun 2021'},
+  {id:2, role:'petani',     name:'Pak Hendra Susanto',        init:'HS', loc:'Cilangkap, Kota Depok',  lahan:'2.5 Ha', saldo:4250000, koperasi:'KKMP Cilangkap', rating:4.8, join:'Mar 2022'},
+  {id:3, role:'pemerintah', name:'Dinas Ketahanan Pangan',    init:'DP', loc:'Kota Depok',          jabatan:'Admin Pangan Daerah', wilayah:8, join:'Sep 2023'},
   {id:4, role:'pembeli',    name:'PT Sumber Pangan Nusantara',init:'SP', loc:'Jakarta Selatan',         tipe:'Retail / B2B', saldo:48750000, join:'Jan 2023'},
   {id:5, role:'system_admin', name:'Super Admin / Regional Manager',init:'SA', loc:'Pusat Pangan Nasional', jabatan:'Otoritas Penuh', join:'Jan 2020'},
 ];
@@ -143,7 +143,7 @@ const AI_RECS = [
 ];
 
 const COMMODITIES = [
-  {id:1,name:'Beras Premium IR64', foto:'🌾',hK:14500,hP:5200, trend:'up',  ch:2.1,  hist:[13200,13500,13800,14000,14200,14500], stok:12500, loc:'Karawang'},
+  {id:1,name:'Beras Premium IR64', foto:'🌾',hK:14500,hP:5200, trend:'up',  ch:2.1,  hist:[13200,13500,13800,14000,14200,14500], stok:12500, loc:'Cilangkap'},
   {id:2,name:'Jagung Pipil',       foto:'🌽',hK:5800, hP:2100, trend:'down',ch:1.5,  hist:[6200,6100,6050,5950,5850,5800],         stok:8200,  loc:'Kediri'},
   {id:3,name:'Kedelai Non-GMO',    foto:'🫘',hK:12000,hP:8500, trend:'up',  ch:3.8,  hist:[10500,10800,11000,11200,11600,12000],   stok:3400,  loc:'Grobogan'},
   {id:4,name:'Cabai Keriting',     foto:'🌶️',hK:38000,hP:18000,trend:'up',  ch:12.5, hist:[24000,26000,29000,33000,36000,38000],   stok:820,   loc:'Solok'},
@@ -162,13 +162,13 @@ const REGIONS = [
 ];
 
 const PREORDERS = [
-  {id:1,kom:'Beras Premium IR64', vol:50,  sat:'ton', harga:13500, status:'confirmed',  petani:'KUD Karya Tani',    eta:'Feb 2026', nilai:675000000,  conf:94},
+  {id:1,kom:'Beras Premium IR64', vol:50,  sat:'ton', harga:13500, status:'confirmed',  petani:'KKMP Cilangkap',    eta:'Feb 2026', nilai:675000000,  conf:94},
   {id:2,kom:'Kedelai Non-GMO',    vol:20,  sat:'ton', harga:11000, status:'pending',    petani:'KUD Harapan Tani',  eta:'Mar 2026', nilai:220000000,  conf:78},
   {id:3,kom:'Bawang Merah',       vol:15,  sat:'ton', harga:25000, status:'ai_match',   petani:'KUD Bawang Mas',    eta:'Feb 2026', nilai:375000000,  conf:87},
 ];
 
 const LOGISTIK = [
-  {id:1,no:'PNH-0812',kom:'Beras 500 kg',  dari:'Karawang',ke:'Jakarta',  status:'dalam_perjalanan',prog:65,eta:'Hari ini 14.00'},
+  {id:1,no:'PNH-0812',kom:'Beras 500 kg',  dari:'Cilangkap',ke:'Jakarta',  status:'dalam_perjalanan',prog:65,eta:'Hari ini 14.00'},
   {id:2,no:'PNH-0813',kom:'Cabai 300 kg',  dari:'Solok',   ke:'Padang',   status:'menunggu_pickup', prog:10,eta:'Besok 08.00'},
 ];
 
@@ -188,7 +188,7 @@ const ANGGOTA = [
 ];
 
 const GUDANG = [
-  {nama:'Gudang Karawang Utara',lok:'Karawang',kap:500,isi:340,persen:68,kom:'Beras, Jagung',kondisi:'Baik',audit:'2 Feb 2026'},
+  {nama:'Gudang Cilangkap Utara',lok:'Cilangkap',kap:500,isi:340,persen:68,kom:'Beras, Jagung',kondisi:'Baik',audit:'2 Feb 2026'},
   {nama:'Gudang Transit Priok',lok:'Jakarta',kap:1200,isi:890,persen:74,kom:'Multi-komoditas',kondisi:'Baik',audit:'28 Jan 2026'},
   {nama:'Gudang Kupang',lok:'NTT',kap:300,isi:45,persen:15,kom:'Beras',kondisi:'Perlu Perbaikan',audit:'15 Jan 2026'},
   {nama:'Gudang Jayapura',lok:'Papua',kap:200,isi:28,persen:14,kom:'Beras, Kedelai',kondisi:'Cukup',audit:'10 Jan 2026'},
@@ -201,8 +201,8 @@ const BUYER_REQ = [
 ];
 
 const OPS_LOG = [
-  {tgl:'28 Jan 2026',rute:'Karawang → Jakarta',vol:'500 kg',status:'selesai',feedback:'Tepat waktu, kualitas baik'},
-  {tgl:'15 Jan 2026',rute:'Karawang → Bandung',vol:'1.2 ton',status:'selesai',feedback:'Delay 2 jam'},
+  {tgl:'28 Jan 2026',rute:'Cilangkap → Jakarta',vol:'500 kg',status:'selesai',feedback:'Tepat waktu, kualitas baik'},
+  {tgl:'15 Jan 2026',rute:'Cilangkap → Bandung',vol:'1.2 ton',status:'selesai',feedback:'Delay 2 jam'},
   {tgl:'5 Jan 2026',rute:'Kediri → Surabaya',vol:'2 ton',status:'selesai',feedback:'Tepat waktu'},
 ];
 
@@ -958,7 +958,7 @@ function renderOperasi() {
   } else if(u.role==='pembeli') {
     tabDef=[{id:'katalog',l:'Katalog Supplier'},{id:'po_aktif',l:'PO Aktif'},{id:'tracking_ops',l:'Tracking'}];
     if(oTab==='katalog') {
-      body = [{kop:'KUD Karya Tani',lok:'Karawang',kom:'Beras, Jagung',stok:'12.5K ton',rating:4.8,cert:'Organik, SNI'},{kop:'KUD Harapan Tani',lok:'Kediri',kom:'Jagung, Kedelai',stok:'8.2K ton',rating:4.6,cert:'SNI'},{kop:'KUD Bawang Mas',lok:'Brebes',kom:'Bawang Merah',stok:'4.2K ton',rating:4.5,cert:'SNI'}].map(s=>`<div style="background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:12px;margin-bottom:10px">
+      body = [{kop:'KKMP Cilangkap',lok:'Cilangkap',kom:'Beras, Jagung',stok:'12.5K ton',rating:4.8,cert:'Organik, SNI'},{kop:'KUD Harapan Tani',lok:'Kediri',kom:'Jagung, Kedelai',stok:'8.2K ton',rating:4.6,cert:'SNI'},{kop:'KUD Bawang Mas',lok:'Brebes',kom:'Bawang Merah',stok:'4.2K ton',rating:4.5,cert:'SNI'}].map(s=>`<div style="background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:12px;margin-bottom:10px">
         <div style="display:flex;justify-content:space-between;margin-bottom:6px"><div><div style="font-size:13px;font-weight:700">${esc(s.kop)}</div><div style="font-size:10px;color:#9c9a92">📌 ${s.lok} · ⭐ ${s.rating}</div></div><span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:#dcfce7;color:#15803d">${s.cert}</span></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
           ${[['Komoditas',s.kom],['Stok Tersedia',s.stok]].map(([k,v])=>`<div style="background:#f7f6f3;border-radius:8px;padding:6px;text-align:center"><div style="font-size:11px;font-weight:700">${v}</div><div style="font-size:9px;color:#9c9a92">${k}</div></div>`).join('')}
@@ -1187,7 +1187,7 @@ function executeAIAction(name, recId) {
       <div style="text-align:right"><div style="font-size:13px;font-weight:800;color:${g.persen<30?'#dc2626':'#1c1a17'}">${g.persen}%</div><div style="font-size:9px;color:#9c9a92">${fmt(g.isi)}/${fmt(g.kap)} ton</div></div>
     </div>`).join('')}
     <div style="font-size:12px;font-weight:700;margin:12px 0 6px">\ud83d\ude9b Perbandingan Rute</div>
-    ${[{r:'Karawang \u2192 Priok \u2192 Kupang (Laut)',w:'5 hari',c:'Rp 42jt',rsk:'Rendah',rec:true},{r:'Karawang \u2192 Surabaya \u2192 Kupang',w:'7 hari',c:'Rp 38jt',rsk:'Sedang',rec:false},{r:'Karawang \u2192 Kupang (Udara)',w:'1 hari',c:'Rp 185jt',rsk:'Rendah',rec:false}].map(x=>`<div style="padding:8px;background:${x.rec?'#f0fdf4':'#f7f6f3'};border:1px solid ${x.rec?'#bbf7d0':'#e8e4dd'};border-radius:10px;margin-bottom:6px">
+    ${[{r:'Cilangkap \u2192 Priok \u2192 Kupang (Laut)',w:'5 hari',c:'Rp 42jt',rsk:'Rendah',rec:true},{r:'Cilangkap \u2192 Surabaya \u2192 Kupang',w:'7 hari',c:'Rp 38jt',rsk:'Sedang',rec:false},{r:'Cilangkap \u2192 Kupang (Udara)',w:'1 hari',c:'Rp 185jt',rsk:'Rendah',rec:false}].map(x=>`<div style="padding:8px;background:${x.rec?'#f0fdf4':'#f7f6f3'};border:1px solid ${x.rec?'#bbf7d0':'#e8e4dd'};border-radius:10px;margin-bottom:6px">
       <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px;font-weight:700">${x.r}</span>${x.rec?'<span style="font-size:9px;font-weight:700;background:#16a34a;color:#fff;padding:1px 6px;border-radius:8px">REKOMENDASI</span>':''}</div>
       <div style="display:flex;gap:12px;font-size:10px;color:#6b7280"><span>\u23f1 ${x.w}</span><span>\ud83d\udcb0 ${x.c}</span><span>\u26a0\ufe0f ${x.rsk}</span></div>
     </div>`).join('')}
@@ -1299,3 +1299,4 @@ render();
 </script>
 </body>
 </html>
+

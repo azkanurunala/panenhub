@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8"/>
@@ -83,15 +83,15 @@
    DATA (Shared from index.html)
 ══════════════════════════════════════ */
 const USERS = [
-  {id:1,role:'petani',    name:'Pak Hendra Susanto',      init:'HS',loc:'Karawang, Jawa Barat',  koperasi:'KUD Karya Tani',       lahan:'2.5 Ha',  saldo:4250000,     rating:4.8, join:'Mar 2022', petaniId:1},
+  {id:1,role:'petani',    name:'Pak Hendra Susanto',      init:'HS',loc:'Cilangkap, Kota Depok',  koperasi:'KKMP Cilangkap',       lahan:'2.5 Ha',  saldo:4250000,     rating:4.8, join:'Mar 2022', petaniId:1},
   {id:2,role:'pembeli',   name:'Bu Sari Wulandari',       init:'SW',loc:'Jakarta Selatan',        tipe:'Pedagang Pasar Induk',                       saldo:18750000,                join:'Jan 2023', orderAktif:2},
-  {id:3,role:'koperasi',  name:'KUD Karya Tani',          init:'KT',loc:'Karawang, Jawa Barat',  anggota:245,                     modal:2400000000,                    join:'Jun 2021', matchAktif:3, distribusi:48200000},
-  {id:4,role:'pemerintah',name:'Dinas Ketahanan Pangan',  init:'DP',loc:'Kab. Karawang',         jabatan:'Admin Pangan Daerah',                                          join:'Sep 2023', wilayah:8},
+  {id:3,role:'koperasi',  name:'KKMP Cilangkap',          init:'MP',loc:'Cilangkap, Kota Depok',  anggota:122,                     modal:2400000000,                    join:'Jun 2021', matchAktif:3, distribusi:48200000},
+  {id:4,role:'pemerintah',name:'Dinas Ketahanan Pangan',  init:'DP',loc:'Kota Depok',         jabatan:'Admin Pangan Daerah',                                          join:'Sep 2023', wilayah:8},
 ];
 const ROLE_LABEL = {petani:'Petani',pembeli:'Pembeli',koperasi:'Koperasi / BUMDes',pemerintah:'Pemerintah'};
 
 const COMMODITIES = [
-  {id:1,name:'Beras Premium IR64',   foto:'🌾',cat:'Padi',    unit:'kg',hK:14500,hP:5200, stok:12500,loc:'Karawang, Jawa Barat',   petani:'KUD Karya Tani',    pId:1,   trend:'up',  ch:2.1, hist:[13200,13500,13800,14000,14200,14500],rating:4.8,sold:2840,cert:['Organik','SNI'],    desc:'Beras premium varietas IR64 dari sawah organik Karawang. Pulen, wangi, ideal untuk konsumsi harian maupun restoran premium.'},
+  {id:1,name:'Beras Premium IR64',   foto:'🌾',cat:'Padi',    unit:'kg',hK:14500,hP:5200, stok:12500,loc:'Cilangkap, Kota Depok',   petani:'KKMP Cilangkap',    pId:1,   trend:'up',  ch:2.1, hist:[13200,13500,13800,14000,14200,14500],rating:4.8,sold:2840,cert:['Organik','SNI'],    desc:'Beras premium varietas IR64 dari sawah organik Cilangkap. Pulen, wangi, ideal untuk konsumsi harian maupun restoran premium.'},
   {id:2,name:'Jagung Pipil Kuning',  foto:'🌽',cat:'Palawija',unit:'kg',hK:5800, hP:2100, stok:8200, loc:'Kediri, Jawa Timur',      petani:'BUMDes Makmur Jaya',pId:null,trend:'down',ch:1.5, hist:[6200,6100,6050,5950,5850,5800],    rating:4.6,sold:5120,cert:['SNI'],          desc:'Jagung pipil kuning siap olah. Cocok untuk pakan ternak, tepung jagung, dan industri pangan.'},
   {id:3,name:'Kedelai Lokal Non-GMO',foto:'🫘',cat:'Palawija',unit:'kg',hK:12000,hP:8500, stok:3400, loc:'Grobogan, Jawa Tengah',   petani:'KUD Harapan Tani',  pId:null,trend:'up',  ch:3.8, hist:[10500,10800,11000,11200,11600,12000],rating:4.9,sold:1240,cert:['Organik','Non-GMO'],desc:'Kedelai lokal Grobogan, biji besar, kadar protein tinggi. Ideal untuk tempe dan tahu berkualitas.'},
   {id:4,name:'Cabai Merah Keriting', foto:'🌶️',cat:'Sayuran', unit:'kg',hK:38000,hP:18000,stok:820,  loc:'Solok, Sumatera Barat',  petani:'Kelompok Tani Maju',pId:null,trend:'up',  ch:12.5,hist:[24000,26000,29000,33000,36000,38000],rating:4.7,sold:320,cert:[],             desc:'Cabai keriting segar langsung dari petani Solok. Pedas alami, stok terbatas musim ini.'},
@@ -122,7 +122,7 @@ const FINANCING = [
   {id:3,icon:'🌱',nama:'Kredit Saprotan',   prov:'Koperasi Internal',     bunga:4,  tenor:4, maks:10000000,min:500000,  cair:'Langsung cair', syarat:'Anggota koperasi aktif, khusus pupuk & bibit',tags:['Bunga 4%/tahun','Langsung cair','Cicil dari panen']},
 ];
 const LOGISTIK = [
-  {id:1,no:'PNH-2401-0812',kom:'Beras Premium IR64 500 kg',    dari:'Karawang, Jabar',ke:'Jakarta Pusat',status:'dalam_perjalanan',prog:65, eta:'Hari ini, 14.00 WIB',  driver:'Pak Rohmat S.',plat:'B 3841 FX',harga:350000},
+  {id:1,no:'PNH-2401-0812',kom:'Beras Premium IR64 500 kg',    dari:'Cilangkap, Depok',ke:'Jakarta Pusat',status:'dalam_perjalanan',prog:65, eta:'Hari ini, 14.00 WIB',  driver:'Pak Rohmat S.',plat:'B 3841 FX',harga:350000},
   {id:2,no:'PNH-2401-0811',kom:'Jagung Pipil Kuning 2.000 kg', dari:'Kediri, Jatim',  ke:'Surabaya',     status:'selesai',           prog:100,eta:'Kemarin, 09.30 WIB', driver:'Pak Sugeng',   plat:'L 1234 AB',harga:420000},
   {id:3,no:'PNH-2401-0813',kom:'Cabai Keriting Segar 300 kg',  dari:'Solok, Sumbar',  ke:'Padang',       status:'menunggu_pickup',   prog:10, eta:'Besok, 08.00 WIB',    driver:'Mencari driver',plat:'—',        harga:180000},
 ];
@@ -809,4 +809,5 @@ render();
 </script>
 </body>
 </html>
+
 
