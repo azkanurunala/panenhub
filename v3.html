@@ -1436,7 +1436,17 @@ FLOWS['detail_kpi'] = [
     var bdy='';
     if(d.id==='pengguna'){
       bdy='<div class="mo-body">'+
-        '<div style="font-size:18px;font-weight:800;color:#1c1a17;margin-bottom:12px">👥 Distribusi Akses Pengguna</div>'+
+        '<div style="font-size:18px;font-weight:800;color:#1c1a17;margin-bottom:12px;text-align:center">👥 Distribusi Akses Pengguna</div>'+
+        '<div style="display:flex;justify-content:center;margin:16px 0">'+
+          '<svg viewBox="0 0 36 36" style="width:140px;height:140px;">'+
+            '<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e8e4dd" stroke-width="3"/>'+
+            '<path stroke-dasharray="66, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#15803d" stroke-width="3"/>'+
+            '<path stroke-dasharray="29, 100" stroke-dashoffset="-66" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#3b82f6" stroke-width="3"/>'+
+            '<path stroke-dasharray="5, 100" stroke-dashoffset="-95" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#f59e0b" stroke-width="3"/>'+
+            '<text x="18" y="19" style="font-size:7px;font-weight:800;fill:#1c1a17" text-anchor="middle">1.284</text>'+
+            '<text x="18" y="23" style="font-size:3px;font-weight:700;fill:#9c9a92" text-anchor="middle">Total Pengguna</text>'+
+          '</svg>'+
+        '</div>'+
         '<div style="background:#fff;border:1px solid #e8e4dd;border-radius:12px;padding:12px;margin-bottom:16px">'+
           '<div style="font-size:11px;font-weight:700;color:#9c9a92;margin-bottom:8px">BREAKDOWN BERDASARKAN PERAN</div>'+
           infoRow('Sertifikasi Petani (Aktif)','854 Pengguna','#15803d') + 
@@ -1461,6 +1471,12 @@ FLOWS['detail_kpi'] = [
       bdy='<div class="mo-body">'+
         '<div style="font-size:18px;font-weight:800;color:#1c1a17;margin-bottom:12px">🏛️ Top Koperasi Terhubung</div>'+
         '<div style="background:#f0fdf4;border:1px solid #dcfce7;border-radius:12px;padding:12px;margin-bottom:16px;color:#15803d;font-size:11px;font-weight:600">Sinkronisasi SimKopdes berjalan normal. Total 48 entitas terverifikasi.</div>'+
+        '<div style="font-size:11px;font-weight:800;color:#9c9a92;margin:16px 0 8px;text-transform:uppercase;letter-spacing:0.05em">Aktivitas Anggota (Bar Chart)</div>'+
+        '<div style="display:flex;align-items:flex-end;gap:8px;height:90px;border-bottom:1px solid #e8e4dd;padding-bottom:4px;margin-bottom:26px;padding-top:20px;text-align:center">'+
+          '<div style="flex:1;background:#3b82f6;height:35%;border-radius:4px 4px 0 0;position:relative"><span style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;color:#1c1a17">122</span><span style="position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:10px;color:#9c9a92;white-space:nowrap;font-weight:600">Depok</span></div>'+
+          '<div style="flex:1;background:#15803d;height:100%;border-radius:4px 4px 0 0;position:relative"><span style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;color:#1c1a17">340</span><span style="position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:10px;color:#9c9a92;white-space:nowrap;font-weight:600">Demak</span></div>'+
+          '<div style="flex:1;background:#2563eb;height:65%;border-radius:4px 4px 0 0;position:relative"><span style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;color:#1c1a17">218</span><span style="position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:10px;color:#9c9a92;white-space:nowrap;font-weight:600">Kediri</span></div>'+
+        '</div>'+
         '<div style="display:flex;flex-direction:column;gap:6px">'+
         kopList.map(function(k,i){
           return '<div class="tap" style="background:#fff;border:1px solid #e8e4dd;padding:10px;border-radius:8px;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="M.open(\'detail_item\',{type:\'koperasi\',id:'+i+'})">'+
@@ -1485,7 +1501,16 @@ FLOWS['detail_kpi'] = [
       return mHeader('Laporan Metrik: AI Aktif',s,t)+bdy;
     } else if(d.id==='system'){
       bdy='<div class="mo-body">'+
-        '<div style="font-size:18px;font-weight:800;color:#1c1a17;margin-bottom:12px">⚡ System API & Cloud Health</div>'+
+        '<div style="font-size:18px;font-weight:800;color:#1c1a17;margin-bottom:12px;text-align:center">⚡ System API & Cloud Health</div>'+
+        '<div style="font-size:11px;font-weight:800;color:#9c9a92;margin:16px 0 8px;text-transform:uppercase;letter-spacing:0.05em">Latency API (Line Chart)</div>'+
+        '<div style="background:#fff;padding:16px 12px;border-radius:12px;border:1px solid #e8e4dd;margin-bottom:16px">'+
+          '<svg viewBox="0 0 100 40" style="width:100%;height:60px;overflow:visible">'+
+            '<polyline fill="none" stroke="#15803d" stroke-width="2" points="0,30 20,28 40,35 60,15 80,25 100,5" stroke-linecap="round" stroke-linejoin="round"/>'+
+            '<polyline fill="none" stroke="#e8e4dd" stroke-width="2" stroke-dasharray="2,2" points="0,10 20,15 40,12 60,20 80,18 100,10"/>'+
+            '<circle cx="100" cy="5" r="3" fill="#15803d"/>'+
+          '</svg>'+
+          '<div style="display:flex;justify-content:space-between;font-size:9px;color:#9c9a92;margin-top:8px;font-weight:600"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>Skrg</span></div>'+
+        '</div>'+
         '<div style="background:#fff;border:1px solid #e8e4dd;border-radius:12px;padding:12px;margin-bottom:16px">'+
           infoRow('Uptime (90 hari)','99.98%','#15803d') + 
           infoRow('API SimKopdes','Latency ~42ms','#15803d') + 
