@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8"/>
@@ -109,15 +109,16 @@ var KOPDES = {
 };
 
 var USERS = [
-  {id:1,role:'koperasi',  name:'KKMP Cilangkap',   init:'MP',loc:'Cilangkap, Kota Depok', anggota:122,modal:2400000000,distribusi:48200000,matchAktif:3,join:'Jun 2021'},
-  {id:2,role:'petani',    name:'Pak Hendra Susanto',         init:'HS',loc:'Cilangkap, Kota Depok', lahan:'2.5 Ha',saldo:4250000,koperasi:'KKMP Cilangkap',rating:4.8,join:'Mar 2022'},
-  {id:3,role:'pemerintah',name:'Dinas Ketahanan Pangan Depok',init:'DP',loc:'Kota Depok',          jabatan:'Admin Pangan Daerah',wilayah:12,join:'Sep 2023'},
-  {id:4,role:'pembeli',   name:'PT Sumber Pangan Nusantara', init:'SP',loc:'Jakarta Selatan',       tipe:'Retail / B2B',saldo:48750000,join:'Jan 2023'},
+  {id:1,role:'admin',     name:'System Administrator',init:'SA',loc:'PanenHub Cloud', jabatan:'Chief Admin',wilayah:0,join:'Jan 2021'},
+  {id:2,role:'koperasi',  name:'KKMP Cilangkap',   init:'MP',loc:'Cilangkap, Kota Depok', anggota:122,modal:2400000000,distribusi:48200000,matchAktif:3,join:'Jun 2021'},
+  {id:3,role:'petani',    name:'Pak Hendra Susanto',         init:'HS',loc:'Cilangkap, Kota Depok', lahan:'2.5 Ha',saldo:4250000,koperasi:'KKMP Cilangkap',rating:4.8,join:'Mar 2022'},
+  {id:4,role:'pemerintah',name:'Dinas Ketahanan Pangan Depok',init:'DP',loc:'Kota Depok',          jabatan:'Admin Pangan Daerah',wilayah:12,join:'Sep 2023'},
+  {id:5,role:'pembeli',   name:'PT Sumber Pangan Nusantara', init:'SP',loc:'Jakarta Selatan',       tipe:'Retail / B2B',saldo:48750000,join:'Jan 2023'},
 ];
 
-var ROLE_ACCENT = {koperasi:'#5ba3f5',petani:'#4ade80',pemerintah:'#c084fc',pembeli:'#fbbf24'};
-var ROLE_LABEL  = {koperasi:'Koperasi Intelligence',petani:'Farmer Assistant',pemerintah:'Government Dashboard',pembeli:'Buyer Platform'};
-var ROLE_HDR    = {koperasi:'linear-gradient(145deg,#0a1628,#162a50)',petani:'linear-gradient(145deg,#0d1f0f,#1a4020)',pemerintah:'linear-gradient(145deg,#1a0d28,#350f50)',pembeli:'linear-gradient(145deg,#1a150a,#3a2808)'};
+var ROLE_ACCENT = {koperasi:'#5ba3f5',petani:'#4ade80',pemerintah:'#c084fc',pembeli:'#fbbf24',admin:'#f97316'};
+var ROLE_LABEL  = {koperasi:'Koperasi Intelligence',petani:'Farmer Assistant',pemerintah:'Government Dashboard',pembeli:'Buyer Platform',admin:'Super Admin'};
+var ROLE_HDR    = {koperasi:'linear-gradient(145deg,#0a1628,#162a50)',petani:'linear-gradient(145deg,#0d1f0f,#1a4020)',pemerintah:'linear-gradient(145deg,#1a0d28,#350f50)',pembeli:'linear-gradient(145deg,#1a150a,#3a2808)',admin:'linear-gradient(145deg,#2a0f0a,#4a1a0f)'};
 
 var COMMODITIES = [
   {id:1,name:'Beras Premium IR64',em:'🌾',cat:'Padi',    hK:14500,hP:5200, trend:'up',  ch:2.1, hist:[13200,13500,13800,14000,14200,14500],stok:12500,loc:'Cilangkap'},
@@ -147,6 +148,13 @@ var REGIONS = [
   {name:'Kalimantan Tengah',status:'defisit', vol:3100,commod:'Sayuran, Buah'},
   {name:'Kota Depok',       status:'defisit', vol:420, commod:'Beras SPHP, Sayuran'},
 ];
+
+var KOPERASI_LIST = [
+  {nama:'KKMP Cilangkap', loc:'Desa Cilangkap, Kec. Tapos', anggota:122, status:'aktif', covWilayah:[8,0]},
+  {nama:'KUD Harapan Tani', loc:'Desa Karanganyar, Kec. Demak', anggota:340, status:'aktif', covWilayah:[4,1]},
+  {nama:'BUMDes Makmur Jaya', loc:'Desa Ngampel, Kec. Kediri', anggota:218, status:'warning', covWilayah:[1,5]}
+];
+
 
 var AI_RECS = [
   {id:1,type:'prescribe',role:'koperasi',conf:91,label:'Distribusi Segera',title:'Gerakkan 280 ton beras ke NTT dalam 5 hari',reason:'Stok NTT di bawah threshold 15%. AI forecast: shortage dalam 8 hari tanpa intervensi. Rute optimal via Pelabuhan Tanjung Priok.',action:'Buat Rencana Distribusi',tag:'Prescriptive AI',flow:'distribusi'},
@@ -692,31 +700,63 @@ FLOWS['kirim_anggota'] = [
 /* FLOW: Konfirmasi Tanam (Petani) */
 FLOWS['konfirmasi_tanam'] = [
   function(d,s,t){
-    return mHeader('Konfirmasi Rencana Tanam',s,t)+
+    return mHeader('Analisis Rencana Tanam AI',s,t)+
     '<div class="mo-body">'+
-      '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:12px;margin-bottom:14px">'+
-        '<div style="font-size:12px;font-weight:700;color:#15803d;margin-bottom:8px">🤖 Rekomendasi AI Untukmu</div>'+
-        infoRow('Varietas Optimal','Padi Ciherang','')+
-        infoRow('Window Tanam','Minggu ini (optimal 5 hari)','')+
-        infoRow('Alasan','Curah hujan BMKG optimal 14 hari','')+
-        infoRow('Proyeksi Panen','±90 hari dari tanam','')+
-        infoRow('Harga Jual Proyeksi','Rp 5.800/kg (+8%%%)','#15803d')+
-        infoRow('Est. Pendapatan Kotor','Rp 19,8 jt (2.5 Ha)','#15803d')+
-        infoRow('Confidence Model','88%','')+
+      '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px;margin-bottom:16px">'+
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'+
+          '<div class="pls" style="width:8px;height:8px;border-radius:50%;background:#22c55e"></div>'+
+          '<div style="font-size:11px;color:#15803d;font-weight:800;text-transform:uppercase;letter-spacing:.05em">Astro-Agronomi AI Model</div>'+
+        '</div>'+
+        '<div style="font-size:18px;font-weight:800;color:#1c1a17;margin-bottom:6px">Padi Inpari 32 — Minggu ke-3 April 2026</div>'+
+        '<div style="font-size:12px;color:#166534;line-height:1.6">AI mendeteksi anomali El Niño Lemah di bulan April. Varietas Inpari 32 direkomendasikan berkat ketahanan optimal terhadap ancaman Kekeringan dan tingkat probabilitas keberhasilan 88%.</div>'+
       '</div>'+
-      '<div style="font-size:13px;font-weight:700;color:#1c1a17;margin-bottom:10px">Konfirmasi Data Tanam Kamu</div>'+
-      fieldHtml('Lahan yang Digunakan','f-lahan','select',true,'',['Blok A — 1.2 Ha','Blok B — 1.3 Ha','Blok A+B — 2.5 Ha'])+
-      fieldHtml('Varietas Pilihan','f-varietas','select',true,'',['Ciherang (Rekomendasi AI)','IR64','Inpari 32','Mekongga'])+
-      fieldHtml('Jumlah Benih (kg)','f-benih','number',true,'Contoh: 50','','')+
-      fieldHtml('Tanggal Mulai Tanam','f-tgl','date',true,'','',new Date().toISOString().slice(0,10))+
+      '<div style="font-size:13px;font-weight:800;color:#1c1a17;margin-bottom:10px">Indikator Lahan Anda (Satelit Kopdes)</div>'+
+      '<div class="grid-2" style="margin-bottom:16px;gap:8px">'+
+        '<div style="background:#f8fafc;border:1px solid #e8e4dd;border-radius:10px;padding:10px">'+
+           '<div style="font-size:10px;color:#64748b;font-weight:700">Cuaca BMKG (14hr)</div>'+
+           '<div style="font-size:13px;font-weight:800;color:#15803d;margin-top:2px">Hujan Optimal</div>'+
+        '</div>'+
+        '<div style="background:#f8fafc;border:1px solid #e8e4dd;border-radius:10px;padding:10px">'+
+           '<div style="font-size:10px;color:#64748b;font-weight:700">Sensor Ph Tanah</div>'+
+           '<div style="font-size:13px;font-weight:800;color:#15803d;margin-top:2px">pH 6.4 (Stabil)</div>'+
+        '</div>'+
+        '<div style="background:#f8fafc;border:1px solid #e8e4dd;border-radius:10px;padding:10px">'+
+           '<div style="font-size:10px;color:#64748b;font-weight:700">Potensi Hama</div>'+
+           '<div style="font-size:13px;font-weight:800;color:#d97706;margin-top:2px">Risiko Medium</div>'+
+        '</div>'+
+        '<div style="background:#f8fafc;border:1px solid #e8e4dd;border-radius:10px;padding:10px">'+
+           '<div style="font-size:10px;color:#64748b;font-weight:700">Estimasi Panen (Yield)</div>'+
+           '<div style="font-size:13px;font-weight:800;color:#15803d;margin-top:2px">7,4 Ton (+14%)</div>'+
+        '</div>'+
+      '</div>'+
+      '<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:12px;margin-bottom:14px">'+
+        '<div style="font-size:12px;font-weight:700;color:#1d4ed8;margin-bottom:8px">📈 Simulasi Finansial Lahan Anda</div>'+
+        infoRow('Target Proyeksi Harga Jual','Rp 6.200/kg (+8%)','') +
+        infoRow('Estimasi Pendapatan Kotor','Rp 19,8 jt (Per 2.5 Ha)','#15803d') +
+        infoRow('Confidence Model Level','88% (Tier A)','#1d4ed8') +
+      '</div>'+
     '</div>'+
-    mFooter(null,'Kirim ke Koperasi →','mo-submit');
+    mFooter(null,'Auto-Fill Form Jadwal →','mo-next');
+  },
+  function(d,s,t){
+    return mHeader('Konfirmasi Jadwal Tanam',s,t)+
+    '<div class="mo-body">'+
+      '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:12px;margin-bottom:14px;color:#15803d;font-size:12px;font-weight:600">'+
+         '✅ Form telah diisi presisi oleh AI.'+
+      '</div>'+
+      '<div style="font-size:13px;font-weight:700;color:#1c1a17;margin-bottom:10px">Verifikasi Data Tanam Anda</div>'+
+      fieldHtml('Lahan yang Digunakan','f-lahan','select',true,'',['Blok A+B — 2.5 Ha','Blok A — 1.2 Ha','Blok B — 1.3 Ha'])+
+      fieldHtml('Varietas Pilihan (AI Override)','f-varietas','select',true,'',['Inpari 32 (Rekomendasi)','Ciherang','IR64','Mekongga'])+
+      fieldHtml('Kebutuhan Benih Presisi (kg)','f-benih','number',true,'Contoh: 50','','70')+
+      fieldHtml('Tanggal Mulai Tabur Benih','f-tgl','date',true,'','','2026-04-18')+
+    '</div>'+
+    mFooter(null,'Konfirmasi Ke Koperasi ✓','mo-submit', 'mo-prev');
   },
   function(d,s,t){
     return successScreen(
-      'Rencana Tanam Dikonfirmasi!',
-      'Data rencana tanam Anda berhasil dikirim ke KKMP Cilangkap dan dicatat di sistem.',
-      [['Lahan',d['f-lahan']||'Blok A — 1.2 Ha'],['Varietas',d['f-varietas']||'Ciherang'],['Jumlah Benih',d['f-benih']||'50'+' kg'],['Mulai Tanam',d['f-tgl']||'—'],['Est. Panen','±90 hari'],['Dikirim ke','KKMP Cilangkap'],['No. Rencana','TNM-2026-'+String(Math.floor(Math.random()*9000)+1000)]],
+      'Rencana Tanam Terhubung!',
+      'Jadwal Anda langsung tersinkron dengan radar Drone Kopdes dan pipeline pasokan rantai pasok nasional.',
+      [['Varietas',d['f-varietas']||'Inpari 32'],['Kebutuhan Benih',d['f-benih']+' kg'],['Mulai Tanam',d['f-tgl']],['Est. Panen','±90 hari'],['Tracking ID','TNM-2026-'+String(Math.floor(Math.random()*9000)+1000)]],
       '🌾'
     );
   }
@@ -1066,6 +1106,242 @@ FLOWS['rekrutmen'] = [
   }
 ];
 
+/* FLOW: CRUD Komoditas */
+FLOWS['tambah_komoditas'] = [
+  function(d,s,t){
+    return mHeader('Tambah Komoditas',s,t)+
+    '<div class="mo-body">'+
+      fieldHtml('Nama Komoditas','f-nama','text',true,'Contoh: Beras Premium','','')+
+      fieldHtml('Kategori','f-kat','select',true,'',['Padi','Palawija','Sayuran','Buah','Lainnya'])+
+      fieldHtml('Harga Konsumen (Target)','f-hk','number',true,'Contoh: 14500','','')+
+      fieldHtml('Harga Petani (Target)','f-hp','number',true,'Contoh: 12000','','')+
+    '</div>'+
+    mFooter(null,'Simpan Komoditas →','mo-submit');
+  },
+  function(d,s,t){ return successScreen('Berhasil!','Data komoditas baru disimpan.',[['Nama',d['f-nama']||'Beras'],['Kategori',d['f-kat']||'Padi']],'✅'); }
+];
+FLOWS['edit_komoditas'] = [
+  function(d,s,t){ return mHeader('Edit Komoditas',s,t)+'<div class="mo-body">'+fieldHtml('Update Harga Konsumen','f-hk','number',true,'Contoh: 15000','','')+fieldHtml('Update Harga Petani','f-hp','number',true,'Contoh: 12500','','')+'</div>'+mFooter(null,'Update →','mo-submit'); },
+  function(d,s,t){ return successScreen('Berhasil Update!','Data harga berhasil ditarik ke dalam database utama.',[],'✅'); }
+];
+FLOWS['hapus_komoditas'] = [
+  function(d){ return mHeader('Hapus Komoditas','1','1')+'<div class="mo-body"><p>Apakah Anda yakin menghapus komoditas ini?</p></div>'+mFooter(null,'Hapus Sekarang','mo-submit'); },
+  function(d){ return successScreen('Dihapus!','Komoditas dikeluarkan dari sistem target.',[],'✅'); }
+];
+
+/* FLOW: CRUD Wilayah */
+FLOWS['tambah_wilayah'] = [
+  function(d,s,t){ return mHeader('Tambah Wilayah',s,t)+'<div class="mo-body">'+fieldHtml('Nama Daerah','f-nama','text',true,'Contoh: Kota Bekasi','','')+fieldHtml('Status Awal','f-stat','select',true,'',['seimbang','surplus','defisit'])+'</div>'+mFooter(null,'Simpan Wilayah →','mo-submit'); },
+  function(d,s,t){ return successScreen('Wilayah Ditambahkan!','Jaringan peta telah diupdate.',[['Nama',d['f-nama']||'Baru']],'🗺️'); }
+];
+FLOWS['edit_wilayah'] = [
+  function(d,s,t){ return mHeader('Update Wilayah',s,t)+'<div class="mo-body">'+fieldHtml('Status Baru','f-stat','select',true,'',['surplus','defisit','seimbang'])+fieldHtml('Volume (Ton)','f-vol','number',true,'','','')+'</div>'+mFooter(null,'Simpan Perubahan →','mo-submit'); },
+  function(d,s,t){ return successScreen('Wilayah Diupdate!','Peta ketahanan pangan langsung tersinkronisasi dengan master data baru.',[],'🗺️'); }
+];
+FLOWS['hapus_wilayah'] = [
+  function(d){ return mHeader('Hapus Wilayah','1','1')+'<div class="mo-body"><p>Yakin ingin menghapus region ini dari pemantauan logistik Anda?</p></div>'+mFooter(null,'Hapus','mo-submit'); },
+  function(d){ return successScreen('Wilayah Dihapus!','','', '🗺️'); }
+];
+
+/* FLOW: CRUD Anggota */
+FLOWS['tambah_anggota'] = [
+  function(d,s,t){ return mHeader('Registrasi Anggota',s,t)+'<div class="mo-body">'+fieldHtml('Nama Petani','f-nama','text',true,'','','')+fieldHtml('Luas Lahan (Ha)','f-lahan','number',true,'','','')+'</div>'+mFooter(null,'Daftarkan Anggota →','mo-submit'); },
+  function(d,s,t){ return successScreen('Anggota Terdaftar!','Petani baru diundang ke jaringan PanenHub.',[['Nama',d['f-nama']||'Petani']],'👨‍🌾'); }
+];
+FLOWS['edit_anggota'] = [
+  function(d,s,t){ return mHeader('Manajemen Anggota',s,t)+'<div class="mo-body">'+fieldHtml('Status Anggota','f-stat','select',true,'',['aktif','warning','hold'])+'</div>'+mFooter(null,'Update Anggota →','mo-submit'); },
+  function(d,s,t){ return successScreen('Anggota Diubah!','Status anggota berhasil di update.',[],'✅'); }
+];
+FLOWS['hapus_anggota'] = [
+  function(d){ return mHeader('Hapus Anggota','1','1')+'<div class="mo-body"><p>Cabut keanggotaan petani ini secara permanen?</p></div>'+mFooter(null,'Cabut Keanggotaan','mo-submit'); },
+  function(d){ return successScreen('Keanggotaan Dicabut!','','', '✅'); }
+];
+
+/* FLOW: DETAIL ITEM VIEWER (Master Data) */
+FLOWS['detail_item'] = [
+  function(d,s,t){
+    var u=S.user, a=ac();
+    
+    function makeDualChart(title, hArr, pArr, hCol, pCol, bottomLabH, bottomLabP) {
+      var all = hArr.concat(pArr);
+      var max = Math.max.apply(null, all) || 1;
+      var min = Math.min.apply(null, all) || 0;
+      if(min===max) { min=0; max++; }
+      var hHtml = hArr.map(function(v){
+        var pct = ((v-min)/(max-min))*100; if(pct<10) pct=10;
+        return '<div title="'+v+'" style="flex:1;background:'+hCol+';height:'+pct+'%;border-radius:2px 2px 0 0;opacity:0.85"></div>';
+      }).join('');
+      var pHtml = pArr.map(function(v){
+        var pct = ((v-min)/(max-min))*100; if(pct<10) pct=10;
+        return '<div title="Estimasi: '+v+'" style="flex:1;background:repeating-linear-gradient(45deg,'+pCol+'40,'+pCol+'40 3px,transparent 3px,transparent 6px);border:1px dashed '+pCol+';height:'+pct+'%;border-radius:2px 2px 0 0;border-bottom:none"></div>';
+      }).join('');
+      
+      return '<div style="margin-bottom:20px;margin-top:10px">'+
+        '<div style="font-size:11px;font-weight:800;color:#9c9a92;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em">📊 '+title+'</div>'+
+        '<div style="display:flex;align-items:flex-end;gap:3px;height:54px;padding-bottom:1px;border-bottom:1px solid #d1cfc7;position:relative;margin-bottom:20px">'+
+          '<div style="flex:'+hArr.length+';display:flex;align-items:flex-end;gap:3px;height:100%">'+hHtml+'</div>'+
+          '<div style="width:2px;height:115%;background:#d1cfc7;margin:0 4px;border-radius:2px"></div>'+
+          '<div style="flex:'+pArr.length+';display:flex;align-items:flex-end;gap:3px;height:100%">'+pHtml+'</div>'+
+          '<div style="position:absolute;bottom:-18px;left:0;font-size:10px;color:#9c9a92;font-weight:700">'+bottomLabH+'</div>'+
+          '<div style="position:absolute;bottom:-18px;right:0;font-size:10px;color:'+pCol+';font-weight:700">'+bottomLabP+'</div>'+
+        '</div>'+
+      '</div>';
+    }
+
+    if(d.type==='komoditas'){
+      var c=COMMODITIES[d.id];
+      var dualChart = makeDualChart('Pergerakan Harga (Rp)', c.hist, [c.hK*1.02, c.hK*1.05, c.hK*1.06, c.hK*1.03], '#1d4ed8', '#f59e0b', 'Histori Aktual (30 Hari)', 'Proyeksi AI (H+7)');
+      var histHtml='<div style="background:#f7f6f3;border:1px solid #e8e4dd;border-radius:10px;padding:12px;margin-bottom:14px">'+
+          dualChart+
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+
+            infoRow('Tren Market','+8.4% (Naik)','#dc2626')+infoRow('Vol Transaksi','14.2 Ton','') +
+          '</div>'+
+        '</div>';
+      var moveHtml='<div style="font-size:12px;font-weight:700;color:#1c1a17;margin-bottom:8px">🔄 Pergerakan Aktif (Hari Ini)</div>'+
+        '<div style="background:#f7f6f3;border:1px solid #e8e4dd;border-radius:10px;padding:10px;margin-bottom:14px;font-size:11px;color:#9c9a92">'+
+          '<div style="margin-bottom:6px">🟢 14:02 - Pre-order 2.5 ton (Buyer: Koperasi Sejahtera)</div>'+
+          '<div style="margin-bottom:6px">🟢 11:45 - Update Harga Petani oleh Sistem Pusat</div>'+
+          '<div>🟡 09:12 - Indikasi kelangkaan di 2 Kecamatan (Alert AI)</div>'+
+        '</div>';
+      
+      var relHtml='';
+      var covR = REGIONS.reduce(function(acc,r,i){ if(r.commod.includes(c.cat)||r.commod.includes(c.name.split(' ')[0])) acc.push({r:r,id:i}); return acc; }, []);
+      if(covR.length>0){
+        relHtml='<div style="font-size:12px;font-weight:700;color:#1c1a17;margin-bottom:8px;margin-top:16px">🗺️ Kawasan Produksi Utama</div>'+
+          '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">'+
+          covR.map(function(cr){
+            return '<div class="tap" style="cursor:pointer;background:#fff;border:1px solid #e8e4dd;padding:10px;border-radius:8px;display:flex;justify-content:space-between;align-items:center" onclick="M.open(\'detail_item\',{type:\'wilayah\',id:'+cr.id+'})">'+
+              '<div style="font-size:12px;font-weight:700;color:#1c1a17">'+esc(cr.r.name)+'</div><div style="font-size:10px;color:#9c9a92;background:#f7f6f3;padding:2px 6px;border-radius:4px">'+stBadge(cr.r.status)+'</div>'+
+            '</div>';
+          }).join('')+'</div>';
+      }
+      
+      var bdy='<div class="mo-body">'+
+          '<div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">'+
+            '<div style="font-size:48px;line-height:1">'+c.em+'</div>'+
+            '<div><div style="font-size:20px;font-weight:800;color:#1c1a17">'+esc(c.name)+'</div><div style="font-size:12px;color:#15803d;font-weight:700">Master Data Nasional</div></div>'+
+          '</div>'+
+          '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:14px;margin-bottom:16px">'+
+            infoRow('Harga Beli Konsumen',fmtRp(c.hK),'')+infoRow('Harga Jual Petani',fmtRp(c.hP),'')+
+          '</div>'+histHtml+moveHtml+relHtml+
+        '</div>';
+      var acts='<button class="tap" onclick="M.open(\'edit_komoditas\')" style="flex:1;background:#eff6ff;color:#1d4ed8;font-weight:700;padding:12px;border-radius:10px;font-size:12px">Update Manual</button>';
+      if(u.role==='admin') acts+='<button class="tap" onclick="M.open(\'hapus_komoditas\')" style="background:#fef2f2;color:#dc2626;font-weight:700;padding:12px;border-radius:10px;font-size:12px">Hapus Berkas</button>';
+      return mHeader('Intelligence Entitas',s,t)+bdy+'<div style="padding:16px;display:flex;gap:8px;border-top:1px solid #e8e4dd">'+acts+'</div>';
+    }
+    else if(d.type==='wilayah'){
+      var r=REGIONS[d.id];
+      var dualChart = makeDualChart('Arus Logistik & Kapasitas (Ton)', [50, 45, 60, 40, 55, r.vol||30], [25, 20, 10, -5], '#15803d', '#dc2626', 'Data 3 Bulan', 'Forecast Defisit');
+      var histHtml='<div style="background:#f7f6f3;border:1px solid #e8e4dd;border-radius:10px;padding:12px;margin-bottom:14px">'+
+          dualChart+
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+
+            infoRow('Proyeksi AI','Defisit (Siaga)','#dc2626') + infoRow('Kapasitas','Terpakai 78%','') +
+          '</div>'+
+        '</div>';
+      var moveHtml='<div style="font-size:12px;font-weight:700;color:#1c1a17;margin-bottom:8px">🚚 Pergerakan Armada Terkini</div>'+
+        '<div style="background:#f7f6f3;border:1px solid #e8e4dd;border-radius:10px;padding:10px;margin-bottom:14px;font-size:11px;color:#9c9a92">'+
+          '<div style="margin-bottom:6px">🟢 16:30 - Truk DR-8821 Masuk (Bawa 4 Ton Beras)</div>'+
+          '<div style="margin-bottom:6px">🔴 14:15 - Truk B-1122 Keluar (Distribusi SPHP)</div>'+
+          '<div>🟡 10:00 - Permintaan Pasokan dari Kec. Sebelah</div>'+
+        '</div>';
+      
+      var relHtml='';
+      var covK = KOPERASI_LIST.reduce(function(acc,k,i){ if(k.covWilayah && k.covWilayah.includes(d.id)) acc.push({k:k,id:i}); return acc; }, []);
+      if(covK.length>0){
+        relHtml='<div style="font-size:12px;font-weight:700;color:#1c1a17;margin-bottom:8px;margin-top:16px">🏛️ Jaringan Koperasi Operasional</div>'+
+          '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">'+
+          covK.map(function(cr){
+            return '<div class="tap" style="cursor:pointer;background:#fff;border:1px solid #e8e4dd;padding:10px;border-radius:8px;display:flex;justify-content:space-between;align-items:center" onclick="M.open(\'detail_item\',{type:\'koperasi\',id:'+cr.id+'})">'+
+              '<div style="font-size:12px;font-weight:700;color:#1c1a17">'+esc(cr.k.nama)+'</div><div style="font-size:10px;color:#15803d;font-weight:700">'+cr.k.anggota+' Petani</div>'+
+            '</div>';
+          }).join('')+'</div>';
+      }
+      
+      var bdy='<div class="mo-body">'+
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">'+
+            '<div><div style="font-size:18px;font-weight:800;color:#1c1a17;margin-bottom:4px">🗺️ '+esc(r.name)+'</div><div style="font-size:11px;color:#9c9a92">ID Wilayah: WYL-2938</div></div>'+
+            stBadge(r.status)+
+          '</div>'+
+          '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:14px;margin-bottom:16px">'+
+            infoRow('Komoditas Utama',esc(r.commod),'')+infoRow('Volume Terdata',(r.vol?fmt(r.vol)+'t':'Tidak Terekam'),'')+infoRow('Waktu Sinkronisasi','12 detik yang lalu','#15803d')+
+          '</div>'+histHtml+moveHtml+relHtml+
+        '</div>';
+      return mHeader('Detail Wilayah',s,t)+bdy;
+    }
+    else if(d.type==='koperasi'){
+      var dualChart = makeDualChart('Serapan Panen & Distribusi (Ton)', [12, 14, 18, 15, 22, 28, 30], [35, 45, 60, 85], '#0f766e', '#1d4ed8', 'Tren Historis', 'Kalkulasi Order AI');
+      var histHtml='<div style="background:#f7f6f3;border:1px solid #e8e4dd;border-radius:10px;padding:12px;margin-bottom:14px">'+
+          dualChart+
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+
+            infoRow('SLA Pemenuhan','94% (Sangat Baik)','#15803d') + infoRow('Laju Anggota','+14 (Bulan ini)','#15803d') +
+          '</div>'+
+        '</div>';
+      var moveHtml='<div style="font-size:12px;font-weight:700;color:#1c1a17;margin-bottom:8px">⚡ Aktivitas Real-time Kopdes</div>'+
+        '<div style="background:#f7f6f3;border:1px solid #e8e4dd;border-radius:10px;padding:10px;margin-bottom:14px;font-size:11px;color:#9c9a92">'+
+          '<div style="margin-bottom:6px">🟢 Pencairan KUR Tani Rp 15Jt untuk 1 Anggota</div>'+
+          '<div style="margin-bottom:6px">🟢 12 Petani Menyelesaikan Laporan Panen Form</div>'+
+          '<div>🟡 Rapat RAT Tahunan terjadwal H-3</div>'+
+        '</div>';
+
+      var kop = KOPERASI_LIST[d.id] || d;
+      var relHtml='';
+      var angIdList = d.id===0 ? [0,3,4] : (d.id===1 ? [1,2] : [2,4]); // mock
+      relHtml='<div style="font-size:12px;font-weight:700;color:#1c1a17;margin-bottom:8px;margin-top:16px">👨‍🌾 Anggota Petani Terafiliasi (Top Skor)</div>'+
+        '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">'+
+        angIdList.map(function(idx){
+          if(!ANGGOTA_LIST[idx]) return '';
+          var an = ANGGOTA_LIST[idx];
+          return '<div class="tap" style="cursor:pointer;background:#fff;border:1px solid #e8e4dd;padding:10px;border-radius:8px;display:flex;justify-content:space-between;align-items:center" onclick="M.open(\'detail_item\',{type:\'anggota\',id:'+idx+'})">'+
+            '<div style="display:flex;align-items:center;gap:8px"><div style="font-size:16px">👨‍🌾</div><div style="font-size:12px;font-weight:700;color:#1c1a17">'+esc(an.nama)+'</div></div>'+
+            '<div style="font-size:10px;color:#1d4ed8;font-weight:700">'+esc(an.komoditas)+'</div>'+
+          '</div>';
+        }).join('')+'</div>';
+      
+      var bdy='<div class="mo-body">'+
+          '<div style="margin-bottom:16px">'+
+            '<div style="font-size:18px;font-weight:800;color:#1c1a17;margin-bottom:4px">🏛️ '+esc(kop.nama)+'</div>'+
+            '<div style="font-size:12px;color:#9c9a92">📍 '+esc(kop.loc)+'</div>'+
+          '</div>'+
+          '<div style="background:#f0fdf4;border:1px solid #dcfce7;border-radius:12px;padding:14px;margin-bottom:16px">'+
+            infoRow('Total Anggota',kop.anggota+' jiwa','#15803d')+infoRow('Status',kop.status,'')+
+          '</div>'+histHtml+moveHtml+relHtml+
+        '</div>';
+      var acts='';
+      if(u.role==='admin') acts='<div style="padding:16px;display:flex;gap:8px;border-top:1px solid #e8e4dd"><button class="tap" style="flex:1;background:#eff6ff;color:#1d4ed8;font-weight:700;padding:12px;border-radius:10px;font-size:12px">Edit Internal Koperasi</button></div>';
+      return mHeader('Data Kopdes',s,t)+bdy+acts;
+    }
+    else if(d.type==='anggota'){
+      var ang=ANGGOTA_LIST[d.id];
+      var dualChart = makeDualChart('Produktivitas & Yield (Ton/Ha)', [0.8, 1.2, 1.1, 1.5, 1.4], [1.8, 2.2, 2.5], '#6366f1', '#10b981', 'Panen 5 Musim Berlalu', 'Estimasi Musim Baru');
+      var histHtml='<div style="background:#f7f6f3;border:1px solid #e8e4dd;border-radius:10px;padding:12px;margin-bottom:14px">'+
+          dualChart+
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+
+            infoRow('Credit Score','84/100 (Tier A)','#1d4ed8') + infoRow('Risiko Gagal','Rendah (4.2%)','#15803d') +
+          '</div>'+
+        '</div>';
+      var moveHtml='<div style="font-size:12px;font-weight:700;color:#1c1a17;margin-bottom:8px">⚡ Log Interaksi Terbaru</div>'+
+        '<div style="background:#f7f6f3;border:1px solid #e8e4dd;border-radius:10px;padding:10px;margin-bottom:14px;font-size:11px;color:#9c9a92">'+
+          '<div style="margin-bottom:6px">🟢 Mengkonfirmasi Rekomendasi Tanam AI (Kemarin)</div>'+
+          '<div style="margin-bottom:6px">🟢 Menerima Bantuan Bibit 50Kg (3 Hari Lalu)</div>'+
+          '<div>🟡 Absen rapat kelompok tani (Minggu lalu)</div>'+
+        '</div>';
+        
+      var bdy='<div class="mo-body">'+
+          '<div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">'+
+            '<div style="width:54px;height:54px;border-radius:50%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">👨‍🌾</div>'+
+            '<div><div style="font-size:20px;font-weight:800;color:#1c1a17">'+esc(ang.nama)+'</div><div style="font-size:12px;color:#9c9a92">Kepemilikan: '+esc(ang.lahan)+'</div></div>'+
+          '</div>'+
+          '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:14px;margin-bottom:16px">'+
+            infoRow('Status Afiliasi',ang.status,'')+infoRow('Komoditas Aktif',ang.komoditas,'')+
+          '</div>'+histHtml+moveHtml+
+        '</div>';
+      var acts='<button class="tap" onclick="M.open(\'edit_anggota\')" style="flex:1;background:#eff6ff;color:#1d4ed8;font-weight:700;padding:12px;border-radius:10px;font-size:12px">Update Profil</button>'+
+             '<button class="tap" onclick="M.open(\'hapus_anggota\')" style="background:#fef2f2;color:#dc2626;font-weight:700;padding:12px;border-radius:10px;font-size:12px">Cabut Status</button>';
+      return mHeader('Intelligence Petani',s,t)+bdy+'<div style="padding:16px;display:flex;gap:8px;border-top:1px solid #e8e4dd">'+acts+'</div>';
+    }
+  }
+];
+
 /* ═══════════════════════════
    GLOBAL HELPER
 ═══════════════════════════ */
@@ -1097,8 +1373,11 @@ function renderNav(){
     {id:'beranda',l:'Beranda',svg:'<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/>'},
     {id:'ai',     l:'AI Insight',svg:'<circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>'},
     {id:'data',   l:'Data',      svg:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>'},
-    {id:'akun',   l:'Akun',      svg:'<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>'},
+    {id:'akun',   l:'Akun',      svg:'<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>'}
   ];
+  if(S.user && (S.user.role==='admin' || S.user.role==='koperasi')){
+    tabs.splice(3, 0, {id:'kelola', l:'Kelola', svg:'<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>'});
+  }
   return '<nav class="bottom-nav">'+tabs.map(function(t){
     var active=S.tab===t.id;
     var col=active?'color:'+ac():'color:#a8a5a0';
@@ -1112,10 +1391,11 @@ function renderNav(){
 
 function screenLogin(){
   var roles=[
+    {role:'admin',     em:'⚙️',l:'System Administrator',s:'CRUD & Master Data',      border:'#ea580c',bg:'#fff7ed',tc:'#c2410c'},
     {role:'koperasi',  em:'🏛️',l:'Koperasi Intelligence',s:'Decision Execution Tool',   border:'#3b82f6',bg:'#eff6ff',tc:'#1d4ed8'},
     {role:'petani',    em:'👨‍🌾',l:'Farmer Assistant',     s:'Guided Farming',            border:'#16a34a',bg:'#f0fdf4',tc:'#15803d'},
     {role:'pemerintah',em:'📋',l:'Government Dashboard', s:'Policy Decision Support',   border:'#9333ea',bg:'#faf5ff',tc:'#7e22ce'},
-    {role:'pembeli',   em:'🛍️',l:'Buyer Platform',        s:'Pre-order & Supply Tracking',border:'#d97706',bg:'#fffbeb',tc:'#b45309'},
+    {role:'pembeli',   em:'🛍️',l:'Buyer Platform',        s:'Pre-order & Supply Tracking',border:'#d97706',bg:'#fffbeb',tc:'#b45309'}
   ];
   var html='<div style="min-height:100vh;display:flex;flex-direction:column">'+
     '<div style="background:linear-gradient(145deg,#0a0f0a,#0d1f10);padding:64px 24px 40px">'+
@@ -1239,7 +1519,7 @@ function screenBeranda(){
       '<div style="font-size:13px;font-weight:700;color:#1c1a17;margin-bottom:8px">Harga Hari Ini</div>'+
       '<div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch">'+
       COMMODITIES.slice(0,5).map(function(c){
-        return '<div class="tap" style="flex-shrink:0;background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:12px;width:100px;box-shadow:0 1px 2px rgba(0,0,0,.04)" data-nav="data">'+
+        return '<div class="tap" style="cursor:pointer;flex-shrink:0;background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:12px;width:100px;box-shadow:0 1px 2px rgba(0,0,0,.04)" onclick="M.open(\'detail_item\',{type:\'komoditas\',id:'+COMMODITIES.indexOf(c)+'})">'+
           '<div style="font-size:22px;margin-bottom:6px">'+c.em+'</div>'+
           '<div style="font-size:11px;font-weight:700;color:#1c1a17;line-height:1.3;margin-bottom:3px">'+c.name.split(' ').slice(0,2).join(' ')+'</div>'+
           '<div style="font-size:12px;font-weight:800;color:#15803d">'+fmtK(c.hK)+'</div>'+
@@ -1400,9 +1680,9 @@ function screenData(){
 
       '<div style="font-size:13px;font-weight:700;color:#1c1a17;margin-bottom:8px">Semua Komoditas</div>'+
       COMMODITIES.map(function(x,i){
-        return '<button class="tap" data-harga-sel="'+i+'" style="width:100%%;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;margin-bottom:8px;text-align:left;border:1px solid;background:'+(S.hargaSel===i?a+'10':'#fff')+';border-color:'+(S.hargaSel===i?a+'40':'#e8e4dd')+'">'+
+        return '<button class="tap" data-harga-sel="'+i+'" style="width:100%;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;margin-bottom:8px;text-align:left;border:1px solid;background:'+(S.hargaSel===i?a+'10':'#fff')+';border-color:'+(S.hargaSel===i?a+'40':'#e8e4dd')+'">'+
           '<span style="font-size:24px">'+x.em+'</span>'+
-          '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:#1c1a17;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(x.name)+'</div><div style="font-size:11px;color:#9c9a92">'+esc(x.loc)+'</div></div>'+
+          '<div style="flex:1;min-width:0"><div class="tap" style="font-size:13px;font-weight:700;color:#2563eb;text-decoration:underline;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer" onclick="event.stopPropagation(); M.open(\'detail_item\',{type:\'komoditas\',id:'+i+'})">'+esc(x.name)+'</div><div style="font-size:11px;color:#9c9a92">'+esc(x.loc)+'</div></div>'+
           '<div style="text-align:right;flex-shrink:0">'+
             '<div style="font-size:13px;font-weight:800;color:#15803d;font-family:DM Mono,monospace">'+fmtRp(x.hK)+'</div>'+
             trendTag(x)+
@@ -1414,17 +1694,17 @@ function screenData(){
       // Wilayah section
       '<div style="font-size:13px;font-weight:700;color:#1c1a17;margin-bottom:8px;margin-top:4px">Peta Wilayah</div>'+
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px">'+
-      REGIONS.map(function(r){
+      REGIONS.map(function(r,i){
         var cls=r.status==='surplus'?'background:#bbf7d0;color:#14532d':r.status==='defisit'?'background:#fecaca;color:#7f1d1d':'background:#fef9c3;color:#713f12';
         var actionBtn='';
         if(u.role==='koperasi'||u.role==='pemerintah'){
           if(r.status==='surplus'){
-            actionBtn='<button class="tap" onclick="M.open(\'minta_distribusi\',{_region:\''+esc(r.name)+'\'})" style="margin-top:8px;width:100%;background:#ffffff99;border:1px solid #14532d40;color:#14532d;font-weight:700;font-size:10px;padding:6px;border-radius:8px">🛒 Minta Pasokan</button>';
+            actionBtn='<button class="tap" onclick="event.stopPropagation(); M.open(\'minta_distribusi\',{_region:\''+esc(r.name)+'\'})" style="margin-top:8px;width:100%;background:#ffffff99;border:1px solid #14532d40;color:#14532d;font-weight:700;font-size:10px;padding:6px;border-radius:8px">🛒 Minta Pasokan</button>';
           } else if(r.status==='defisit'){
-            actionBtn='<button class="tap" onclick="M.open(\'tawarkan_distribusi\',{_region:\''+esc(r.name)+'\'})" style="margin-top:8px;width:100%;background:#ffffff99;border:1px solid #7f1d1d40;color:#7f1d1d;font-weight:700;font-size:10px;padding:6px;border-radius:8px">🚚 Tawarkan Stok</button>';
+            actionBtn='<button class="tap" onclick="event.stopPropagation(); M.open(\'tawarkan_distribusi\',{_region:\''+esc(r.name)+'\'})" style="margin-top:8px;width:100%;background:#ffffff99;border:1px solid #7f1d1d40;color:#7f1d1d;font-weight:700;font-size:10px;padding:6px;border-radius:8px">🚚 Tawarkan Stok</button>';
           }
         }
-        return '<div style="'+cls+';border-radius:12px;padding:10px;display:flex;flex-direction:column">'+
+        return '<div class="tap" style="cursor:pointer;'+cls+';border-radius:12px;padding:10px;display:flex;flex-direction:column" onclick="M.open(\'detail_item\',{type:\'wilayah\',id:'+i+'})">'+
           '<div style="font-size:12px;font-weight:700">'+esc(r.name)+'</div>'+
           '<div style="font-size:10px;opacity:.7;margin-top:2px;flex:1">'+esc(r.commod)+'</div>'+
           '<div style="display:flex;align-items:flex-end;justify-content:space-between;margin-top:6px">'+
@@ -1555,13 +1835,109 @@ function screenAkun(){
   '</div>';
 }
 
+function screenKelola(){
+  var u=S.user, a=ac();
+  var sub=S.kelolaTab||'komoditas';
+
+  var tabsHtml='<div style="display:flex;gap:8px;overflow-x:auto;margin-top:16px;padding-bottom:4px;scrollbar-width:none">';
+  var navs=[{id:'komoditas',l:'🌾 Komoditas'}];
+  if(u.role==='admin') navs.push({id:'wilayah',l:'🗺️ Wilayah'});
+  if(u.role==='admin') navs.push({id:'koperasi',l:'🏛️ Koperasi'});
+  navs.push({id:'anggota',l:'👨‍🌾 Anggota'});
+  
+  navs.forEach(function(n){
+    var act=sub===n.id;
+    var st=act?'background:'+a+';color:#fff;border:1px solid '+a:'background:#fff;border:1px solid #e8e4dd;color:#1c1a17';
+    tabsHtml+='<button class="tap" onclick="set({kelolaTab:\''+n.id+'\'})" style="'+st+';padding:8px 16px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap">'+n.l+'</button>';
+  });
+  tabsHtml+='</div>';
+
+  var filterHtml='';
+  if(u.role==='admin'){
+    filterHtml='<div style="background:#fff;border:1px solid #e8e4dd;border-radius:12px;padding:12px;margin-bottom:16px">'+
+      '<div style="font-size:11px;font-weight:700;color:#9c9a92;text-transform:uppercase;margin-bottom:10px">Filter Nasional</div>'+
+      '<div style="display:flex;flex-direction:column;gap:8px">'+
+        '<select style="width:100%;padding:8px;border-radius:8px;border:1px solid #cbd5e1;background:#f8fafc" onchange="alert(\'Filter Provinsi diterapkan (Visual)\')"><option>Semua Provinsi</option><option>Jawa Barat</option><option>Jawa Tengah</option><option>Jawa Timur</option></select>'+
+        '<select style="width:100%;padding:8px;border-radius:8px;border:1px solid #cbd5e1;background:#f8fafc"><option>Semua Kota/Kab</option><option>Kota Depok</option><option>Kab. Bogor</option></select>'+
+        '<select style="width:100%;padding:8px;border-radius:8px;border:1px solid #cbd5e1;background:#f8fafc"><option>Semua Kecamatan</option><option>Tapos</option><option>Cimanggis</option></select>'+
+      '</div>'+
+    '</div>';
+  }
+
+  var bodyHtml='';
+  if(sub==='komoditas'){
+    var komHtml='<div style="overflow-x:auto;background:#fff;border-radius:12px;border:1px solid #e8e4dd;margin-bottom:16px"><table style="width:100%;min-width:350px;border-collapse:collapse;font-size:12px"><thead><tr style="background:#f8fafc;color:#64748b;text-align:left;font-size:11px;text-transform:uppercase"><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Komoditas</th><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">H.Konsumen</th><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">H.Petani</th></tr></thead><tbody>';
+    COMMODITIES.forEach(function(c,i){
+      komHtml+='<tr class="tap" onclick="M.open(\'detail_item\', {type:\'komoditas\', id:'+i+'})" style="border-bottom:1px solid #f1f5f9" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'\'">'+
+        '<td style="padding:10px 12px"><div style="font-weight:700;color:#1c1a17;display:flex;align-items:center;gap:6px"><div style="font-size:16px">'+c.em+'</div>'+esc(c.name)+'</div></td>'+
+        '<td style="padding:10px 12px">'+fmtRp(c.hK)+'</td>'+
+        '<td style="padding:10px 12px">'+fmtRp(c.hP)+'</td>'+
+      '</tr>';
+    });
+    bodyHtml=(u.role==='admin'?'<button class="tap" data-flow="tambah_komoditas" style="width:100%;background:#16a34a;color:#fff;font-size:13px;font-weight:700;padding:12px;border-radius:14px;margin-bottom:16px;box-shadow:0 2px 4px rgba(22,163,74,0.2)">+ Tambah Komoditas Baru</button>':'')+komHtml+'</tbody></table></div>';
+  }
+  else if(sub==='wilayah' && u.role==='admin'){
+    var regHtml='<div style="background:#f0fdf4;border:1px solid #dcfce7;color:#15803d;padding:12px;border-radius:12px;font-size:12px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px;line-height:1.4"><div class="pls" style="width:8px;height:8px;border-radius:50%;background:#22c55e;flex-shrink:0"></div> Master Data Wilayah otomatis diseleksi dan tersinkronisasi dari Portal Pangan Nasional.</div>';
+    regHtml+='<div style="overflow-x:auto;background:#fff;border-radius:12px;border:1px solid #e8e4dd;margin-bottom:16px"><table style="width:100%;min-width:380px;border-collapse:collapse;font-size:12px"><thead><tr style="background:#f8fafc;color:#64748b;text-align:left;font-size:11px;text-transform:uppercase"><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Nama Daerah</th><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Status Area</th><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Vol. Terdata</th><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Tipe Data</th></tr></thead><tbody>';
+    REGIONS.forEach(function(r,i){
+      regHtml+='<tr class="tap" onclick="M.open(\'detail_item\', {type:\'wilayah\', id:'+i+'})" style="border-bottom:1px solid #f1f5f9" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'\'">'+
+        '<td style="padding:10px 12px;font-weight:700;color:#1c1a17">'+esc(r.name)+'</td>'+
+        '<td style="padding:10px 12px">'+stBadge(r.status)+'</td>'+
+        '<td style="padding:10px 12px">'+(r.vol?fmt(r.vol)+'t':'Stabil')+'</td>'+
+        '<td style="padding:10px 12px"><span style="background:#f1f5f9;color:#64748b;font-size:10px;font-weight:700;padding:4px 8px;border-radius:12px;border:1px solid #cbd5e1">SINKRON</span></td>'+
+      '</tr>';
+    });
+    bodyHtml=regHtml+'</tbody></table></div>';
+  }
+  else if(sub==='koperasi' && u.role==='admin'){
+    var kopHtml='<div style="background:#f0fdf4;border:1px solid #dcfce7;color:#15803d;padding:12px;border-radius:12px;font-size:12px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px;line-height:1.4"><div class="pls" style="width:8px;height:8px;border-radius:50%;background:#22c55e;flex-shrink:0"></div> Entitas Koperasi tersinkronisasi otomatis dengan SimKopdes pusat.</div>';
+    var mockKop = [
+      {nama:'KKMP Cilangkap', loc:'Desa Cilangkap, Kec. Tapos', anggota:122, status:'aktif'},
+      {nama:'KUD Harapan Tani', loc:'Karanganyar, Demak', anggota:340, status:'aktif'},
+      {nama:'BUMDes Makmur Jaya', loc:'Ngampel, Kediri', anggota:218, status:'warning'}
+    ];
+    kopHtml+='<div style="overflow-x:auto;background:#fff;border-radius:12px;border:1px solid #e8e4dd;margin-bottom:16px"><table style="width:100%;min-width:480px;border-collapse:collapse;font-size:12px"><thead><tr style="background:#f8fafc;color:#64748b;text-align:left;font-size:11px;text-transform:uppercase"><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Nama Koperasi</th><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Lokasi</th><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Total Anggota</th><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Status</th></tr></thead><tbody>';
+    mockKop.forEach(function(r){
+      kopHtml+='<tr class="tap" onclick="M.open(\'detail_item\', {type:\'koperasi\', nama:\''+esc(r.nama)+'\', loc:\''+esc(r.loc)+'\', anggota:'+r.anggota+', status:\''+r.status+'\'})" style="border-bottom:1px solid #f1f5f9" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'\'">'+
+        '<td style="padding:10px 12px;font-weight:700;color:#1c1a17">'+esc(r.nama)+'</td>'+
+        '<td style="padding:10px 12px;color:#64748b">📍 '+esc(r.loc)+'</td>'+
+        '<td style="padding:10px 12px">'+r.anggota+' petani</td>'+
+        '<td style="padding:10px 12px">'+stBadge(r.status)+'</td>'+
+      '</tr>';
+    });
+    bodyHtml=kopHtml+'</tbody></table></div>';
+  }
+  else if(sub==='anggota'){
+    var usrHtml='<div style="overflow-x:auto;background:#fff;border-radius:12px;border:1px solid #e8e4dd;margin-bottom:16px"><table style="width:100%;min-width:350px;border-collapse:collapse;font-size:12px"><thead><tr style="background:#f8fafc;color:#64748b;text-align:left;font-size:11px;text-transform:uppercase"><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Petani</th><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Lahan</th><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Komoditas</th><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Status</th></tr></thead><tbody>';
+    ANGGOTA_LIST.forEach(function(r,i){
+      usrHtml+='<tr class="tap" onclick="M.open(\'detail_item\', {type:\'anggota\', id:'+i+'})" style="border-bottom:1px solid #f1f5f9" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'\'">'+
+        '<td style="padding:10px 12px;font-weight:700;color:#1c1a17">'+esc(r.nama)+'</td>'+
+        '<td style="padding:10px 12px">'+esc(r.lahan)+'</td>'+
+        '<td style="padding:10px 12px">'+esc(r.komoditas)+'</td>'+
+        '<td style="padding:10px 12px">'+stBadge(r.status)+'</td>'+
+      '</tr>';
+    });
+    bodyHtml='<button class="tap" data-flow="tambah_anggota" style="width:100%;background:#e0e7ff;color:#4338ca;border:1px solid #c7d2fe;font-size:13px;font-weight:700;padding:12px;border-radius:14px;margin-bottom:16px">+ Registrasi Anggota Baru</button>'+usrHtml+'</tbody></table></div>';
+  }
+
+  return '<div>'+
+    '<div style="background:'+ROLE_HDR[u.role]+';padding:48px 16px 16px">'+
+      '<div style="color:'+a+';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">'+ROLE_LABEL[u.role]+'</div>'+
+      '<div style="color:#fff;font-size:22px;font-weight:800">Kelola Data ⚙️</div>'+
+      '<div style="color:rgba(255,255,255,.45);font-size:12px;margin-top:2px">CRUD Master Data & Pengguna</div>'+
+      tabsHtml+
+    '</div>'+
+    '<div style="padding:16px 14px 60px">'+filterHtml+bodyHtml+'</div>'+
+  '</div>';
+}
+
 /* ═══════════════════════════
    RENDER
 ═══════════════════════════ */
 function render(){
   var shell=document.getElementById('shell');
   if(!S.user){ screenLogin(); bindEvents(); return; }
-  var screens={beranda:screenBeranda,ai:screenAI,data:screenData,akun:screenAkun};
+  var screens={beranda:screenBeranda,ai:screenAI,data:screenData,akun:screenAkun,kelola:screenKelola};
   var fn=screens[S.tab]||screenBeranda;
   shell.innerHTML='<div class="tab-content">'+fn()+'</div>'+renderNav();
   bindEvents();
