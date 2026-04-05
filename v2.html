@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<title>PanenHub — System of Intelligence</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#0c0a09;font-family:'Plus Jakarta Sans',sans-serif}
+#app{min-height:100vh;display:flex;justify-content:center;background:#0c0a09}
+.shell{width:100%;max-width:430px;min-height:100vh;background:#fafaf9;position:relative;box-shadow:0 0 80px rgba(0,0,0,.6)}
+::-webkit-scrollbar{display:none}*{scrollbar-width:none}
+input,button,select{font-family:inherit;border:none;background:none;cursor:pointer}
+.tap{transition:transform .12s;cursor:pointer;user-select:none}
+.tap:active{transform:scale(.97)}
+.scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.shadow-card{box-shadow:0 1px 4px rgba(0,0,0,.07),0 0 1px rgba(0,0,0,.05)}
+.progress{transition:width .5s ease}
+
+/* Header gradient */
+.gh{background:linear-gradient(145deg,#14532d 0%,#166534 55%,#15803d 100%)}
+
+/* AI pill */
+.ai-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:20px}
+.ai-badge.blue{background:rgba(56,130,220,.15);color:#5ba3f5;border:1px solid rgba(56,130,220,.25)}
+.ai-badge.green{background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.2)}
+.ai-badge.amber{background:rgba(245,158,11,.12);color:#fbbf24;border:1px solid rgba(245,158,11,.2)}
+.ai-badge.red{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2)}
+
+/* Confidence ring */
+.conf-ring{position:relative;flex-shrink:0}
+.conf-ring svg{transform:rotate(-90deg)}
+.conf-ring .val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:10px;font-weight:500}
+
+/* AI recommendation card */
+.ai-card{border-radius:16px;padding:16px;margin-bottom:10px;position:relative;overflow:hidden}
+.ai-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.ai-card.predict::before{background:linear-gradient(90deg,#5ba3f5,#818cf8)}
+.ai-card.prescribe::before{background:linear-gradient(90deg,#4ade80,#34d399)}
+.ai-card.warn::before{background:linear-gradient(90deg,#f87171,#fb923c)}
+.ai-card-bg{background:#fff;border:1px solid #e8e6e0;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.ai-card-warn{background:#fff5f5;border:1px solid #fecaca}
+.ai-card-prescribe{background:#f0fdf4;border:1px solid #bbf7d0}
+
+/* Bottom nav */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:1px solid #f0ece8;display:flex;z-index:50;box-shadow:0 -1px 0 rgba(0,0,0,.05)}
+.tab-content{height:100vh;overflow-y:auto;padding-bottom:72px}
+
+/* Stat chip */
+.stat-chip{background:rgba(255,255,255,.12);border-radius:12px;padding:8px 12px;text-align:center}
+
+/* Progress ring anim */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.fu{animation:fadeUp .3s ease forwards;opacity:0}
+.d1{animation-delay:.04s}.d2{animation-delay:.09s}.d3{animation-delay:.14s}.d4{animation-delay:.19s}
+
+/* Pulse dot */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.pls{animation:pulse 2s ease-in-out infinite}
+
+/* Shimmer for "AI thinking" */
+@keyframes shimmer{0%{background-position:-300px 0}100%{background-position:300px 0}}
+.thinking{background:linear-gradient(90deg,#f0ece8 25%,#e8e4dd 50%,#f0ece8 75%);background-size:600px 100%;animation:shimmer 1.5s infinite}
+
+/* Early warning severity */
+.ew-critical{background:#fff0f0;border-left:4px solid #ef4444;border-radius:0 12px 12px 0}
+.ew-high{background:#fffbeb;border-left:4px solid #f59e0b;border-radius:0 12px 12px 0}
+.ew-medium{background:#f0f9ff;border-left:4px solid #3b82f6;border-radius:0 12px 12px 0}
+
+/* Heatmap cell */
+.hm-surplus{background:#bbf7d0;color:#14532d}
+.hm-seimbang{background:#fef9c3;color:#713f12}
+.hm-defisit{background:#fecaca;color:#7f1d1d}
+
+/* Confidence bar */
+.conf-bar-track{height:4px;border-radius:2px;background:#e8e4dd;overflow:hidden}
+.conf-bar-fill{height:100%;border-radius:2px;transition:width .8s ease}
+
+/* Modal System Mobile */
+#modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 100; display: none; align-items: flex-end; justify-content: center; }
+.modal-box { background: #fff; width: 100%; max-width: 430px; border-radius: 24px 24px 0 0; box-shadow: 0 -8px 24px rgba(0,0,0,0.1); overflow: hidden; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); color: #1c1a17; }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-hdr { padding: 20px 24px; border-bottom: 1px solid #e8e4dd; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: #fff; z-index: 2; }
+.modal-body { padding: 24px; max-height: 70vh; overflow-y: auto; }
+.modal-ftr { padding: 16px 24px; background: #f9fafb; border-top: 1px solid #e8e4dd; display: flex; flex-direction: column; gap: 10px; padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+.btn-primary { background: #1c1a17; color: #fff; font-weight: 700; padding: 14px; border-radius: 14px; text-align: center; width: 100%; font-size: 15px; }
+.btn-ghost { color: #6b7280; font-weight: 600; padding: 12px; text-align: center; width: 100%; font-size: 14px; }
+
+.tech-spec { font-family: 'DM Mono', monospace; font-size: 11px; background: #f1f5f9; padding: 12px; border-radius: 10px; color: #475569; margin-top: 12px; border-left: 3px solid #64748b; line-height: 1.5; }
+.flow-step { display: flex; gap: 14px; margin-bottom: 20px; position: relative; }
+.flow-step:not(:last-child)::after { content: ''; position: absolute; left: 11px; top: 24px; bottom: -8px; width: 2px; background: #e2e8f0; }
+.step-icon { width: 24px; height: 24px; border-radius: 50%; background: #3b82f6; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex-shrink: 0; z-index: 1; }
+.step-done { background: #10b981; }
+
+/* AR Scan Simulator */
+.ar-view { background: #000; border-radius: 20px; position: relative; overflow: hidden; height: 320px; margin-bottom: 16px; border: 2px solid #4ade80; }
+.ar-overlay { position: absolute; inset: 0; pointer-events: none; border: 2px dashed rgba(74,222,128,0.4); margin: 40px; border-radius: 12px; }
+.ar-bbox { position: absolute; border: 2px solid #4ade80; background: rgba(74,222,128,0.1); border-radius: 4px; padding: 4px; animation: arPulse 1.5s infinite; }
+@keyframes arPulse { 0% { opacity: 0.4; } 50% { opacity: 0.8; } 100% { opacity: 0.4; } }
+.ar-label { background: #4ade80; color: #000; font-size: 9px; font-weight: 800; padding: 2px 4px; border-radius: 2px; margin-bottom: 2px; }
+.ar-stat { position: absolute; bottom: 12px; left: 12px; right: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ar-chip { background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); border-radius: 8px; padding: 6px; border: 1px solid rgba(255,255,255,0.1); }
+
+/* Mobile Trace Log */
+#ai-trace-mob { background: #0a0f0a; padding: 12px; font-family: 'DM Mono', monospace; font-size: 9px; color: #4ade80; height: 120px; overflow-y: auto; border-top: 1px solid #1c1f1c; margin: 10px -16px -16px; border-radius: 0 0 16px 16px; }
+.trace-line { margin-bottom: 4px; display: flex; gap: 6px; opacity: 0.7; animation: traceFade 0.3s ease; }
+@keyframes traceFade { from { opacity: 0; transform: translateX(-4px); } to { opacity: 0.7; transform: translateX(0); } }
+.trace-ts { color: #6b7280; flex-shrink: 0; }
+.trace-tag { color: #fbbf24; font-weight: 700; }
+</style>
+</head>
+<body>
+<div id="app"><div class="shell" id="shell"></div></div>
+<div id="modal-overlay"></div>
+<script>
+/* ═══════════════════════════════════ */
+const USERS = [
+  {id:1, role:'koperasi',   name:'KUD Karya Tani Karawang',  init:'KT', loc:'Karawang, Jawa Barat',  anggota:245, modal:2400000000, distribusi:48200000, matchAktif:3, join:'Jun 2021'},
+  {id:2, role:'petani',     name:'Pak Hendra Susanto',        init:'HS', loc:'Karawang, Jawa Barat',  lahan:'2.5 Ha', saldo:4250000, koperasi:'KUD Karya Tani', rating:4.8, join:'Mar 2022'},
+  {id:3, role:'pemerintah', name:'Dinas Ketahanan Pangan',    init:'DP', loc:'Kab. Karawang',          jabatan:'Admin Pangan Daerah', wilayah:8, join:'Sep 2023'},
+  {id:4, role:'pembeli',    name:'PT Sumber Pangan Nusantara',init:'SP', loc:'Jakarta Selatan',         tipe:'Retail / B2B', saldo:48750000, join:'Jan 2023'},
+  {id:5, role:'system_admin', name:'Super Admin / Regional Manager',init:'SA', loc:'Pusat Pangan Nasional', jabatan:'Otoritas Penuh', join:'Jan 2020'},
+];
+
+const APPS = {
+  koperasi:   {label:'Koperasi Intelligence',  sub:'Decision Execution Tool',   hdr:'gh', accent:'#15803d'},
+  petani:     {label:'Farmer Assistant',        sub:'Guided Farming',             hdr:'gh', accent:'#15803d'},
+  pemerintah: {label:'Government Dashboard',    sub:'Policy Decision Support',    hdr:'gh', accent:'#15803d'},
+  pembeli:    {label:'Buyer Platform',          sub:'Pre-order & Supply Tracking',hdr:'gh', accent:'#15803d'},
+  system_admin: {label:'System of Supervision',  sub:'Admin & AI Oversight Control', hdr:'gh', accent:'#15803d'},
+};
+
+const AI_RECS = [
+  {id:1, type:'prescribe', role:'koperasi', conf:91, label:'Distribusi Segera', title:'Gerakkan 280 ton beras ke NTT dalam 5 hari', reason:'Stok NTT di bawah threshold kritis. Model prediksi: shortage dalam 8 hari jika tidak diintervensi.', action:'Buat Rencana Distribusi', tag:'Prescriptive AI', tech:'Algorithm: Linear Programming (Simplex) · Optimization: Transport Cost Minimization · Efficiency: +42% vs Manual'},
+  {id:2, type:'predict',   role:'koperasi', conf:84, label:'Prediksi Panen',    title:'Produksi jagung Kediri diproyeksi turun 18% bulan depan', reason:'Anomali curah hujan + data historis 3 tahun terakhir. Siapkan stok pengganti atau sourcing alternatif.', action:'Lihat Detail Forecast', tag:'Predictive AI', tech:'Algorithm: LSTM (Long Short-Term Memory) · Input: Soil Moisture + BMKG Rainfall · Error Rate: 3.2%'},
+  {id:3, type:'prescribe', role:'koperasi', conf:78, label:'Rekomendasi Tanam', title:'Prioritaskan kedelai untuk 12 anggota di blok C musim ini', reason:'Demand pre-order dari PT Sumber Pangan meningkat 34%. Margin kedelai lokal lebih tinggi dari padi saat ini.', action:'Kirim ke Anggota', tag:'Prescriptive AI', tech:'Algorithm: Genetic Algorithm · Logic: Profit Isolation Optimization · Impact: +30% Farmer Income'},
+  {id:4, type:'predict',   role:'petani',   conf:88, label:'Waktu Tanam Ideal', title:'Mulai tanam padi varietas Ciherang minggu ini', reason:'Curah hujan proyeksi optimal. Harga beras diprediksi naik 8% saat panen Anda tiba (±90 hari).', action:'Konfirmasi & Lapor', tag:'Predictive AI', tech:'Algorithm: Seasonal ARIMA · Confidence: 88% · Data: Historical 5 Years Market Prices'},
+  {id:5, type:'prescribe', role:'petani',   conf:72, label:'Peluang Pembiayaan', title:'KUR Tani Cepat cocok untuk musim tanam Anda', reason:'Berdasarkan riwayat panen dan rating 4.8, Anda termasuk tier A — bunga 6%/tahun, cair 3 hari.', action:'Ajukan Sekarang', tag:'Prescriptive AI', tech:'Algorithm: Credit Scoring Model (XGBoost) · Tiering: A (Low Risk) · Approval Odds: 94%'},
+  {id:6, type:'warn',      role:'pemerintah',conf:95, label:'Early Warning Kritis', title:'Proyeksi shortage beras di NTT & Papua dalam 8–12 hari', reason:'Stok gabungan 2 provinsi turun di bawah 15% buffer. Intervensi distribusi diperlukan segera.', action:'Aktifkan Respons Darurat', tag:'Early Warning', tech:'Logic: Heatmap Vector Analysis · Threshold: <15% Safety Stock · Urgency: CRITICAL'},
+  {id:7, type:'predict',   role:'pemerintah',conf:80, label:'Proyeksi Inflasi',  title:'Harga cabai berisiko naik 18–25% bulan depan di Jawa', reason:'Pola produksi Solok-Garut menunjukkan penurunan 22%. Musim kering berlanjut 3 minggu ke depan.', action:'Siapkan Kebijakan', tag:'Predictive AI', tech:'Algorithm: Prophet (FB) · Target: Consumer Price Index (Food) · Risk Level: HIGH'},
+];
+
+const COMMODITIES = [
+  {id:1,name:'Beras Premium IR64', foto:'🌾',hK:14500,hP:5200, trend:'up',  ch:2.1,  hist:[13200,13500,13800,14000,14200,14500], stok:12500, loc:'Karawang'},
+  {id:2,name:'Jagung Pipil',       foto:'🌽',hK:5800, hP:2100, trend:'down',ch:1.5,  hist:[6200,6100,6050,5950,5850,5800],         stok:8200,  loc:'Kediri'},
+  {id:3,name:'Kedelai Non-GMO',    foto:'🫘',hK:12000,hP:8500, trend:'up',  ch:3.8,  hist:[10500,10800,11000,11200,11600,12000],   stok:3400,  loc:'Grobogan'},
+  {id:4,name:'Cabai Keriting',     foto:'🌶️',hK:38000,hP:18000,trend:'up',  ch:12.5, hist:[24000,26000,29000,33000,36000,38000],   stok:820,   loc:'Solok'},
+  {id:5,name:'Bawang Merah',       foto:'🧅',hK:28000,hP:14000,trend:'stable',ch:0.4,hist:[27000,27200,27500,28000,27800,28000],   stok:4200,  loc:'Brebes'},
+];
+
+const REGIONS = [
+  {name:'Jawa Barat',       status:'surplus', vol:12500, commod:'Beras, Sayuran'},
+  {name:'Jawa Timur',       status:'surplus', vol:18200, commod:'Jagung, Kedelai'},
+  {name:'Sulawesi Selatan', status:'surplus', vol:7600,  commod:'Beras, Kakao'},
+  {name:'Sumatera Selatan', status:'surplus', vol:9800,  commod:'Beras, Sawit'},
+  {name:'Jawa Tengah',      status:'seimbang',vol:0,     commod:'Beras, Bawang'},
+  {name:'NTT',              status:'defisit', vol:8200,  commod:'Beras, Jagung'},
+  {name:'Papua',            status:'defisit', vol:5400,  commod:'Beras, Kedelai'},
+  {name:'Kalteng',          status:'defisit', vol:3100,  commod:'Sayuran, Buah'},
+];
+
+const PREORDERS = [
+  {id:1,kom:'Beras Premium IR64', vol:50,  sat:'ton', harga:13500, status:'confirmed',  petani:'KUD Karya Tani',    eta:'Feb 2026', nilai:675000000,  conf:94},
+  {id:2,kom:'Kedelai Non-GMO',    vol:20,  sat:'ton', harga:11000, status:'pending',    petani:'KUD Harapan Tani',  eta:'Mar 2026', nilai:220000000,  conf:78},
+  {id:3,kom:'Bawang Merah',       vol:15,  sat:'ton', harga:25000, status:'ai_match',   petani:'KUD Bawang Mas',    eta:'Feb 2026', nilai:375000000,  conf:87},
+];
+
+const LOGISTIK = [
+  {id:1,no:'PNH-0812',kom:'Beras 500 kg',  dari:'Karawang',ke:'Jakarta',  status:'dalam_perjalanan',prog:65,eta:'Hari ini 14.00'},
+  {id:2,no:'PNH-0813',kom:'Cabai 300 kg',  dari:'Solok',   ke:'Padang',   status:'menunggu_pickup', prog:10,eta:'Besok 08.00'},
+];
+
+const EARLY_WARNINGS = [
+  {id:1,sev:'critical',icon:'🔴',title:'Shortage beras NTT & Papua',   desc:'Stok 8 hari. Intervensi diperlukan sekarang.',   conf:95, days:8},
+  {id:2,sev:'high',    icon:'🟡',title:'Lonjakan harga cabai Jawa',    desc:'Proyeksi +18-25% dalam 30 hari.',                conf:80, days:30},
+  {id:3,sev:'medium',  icon:'🔵',title:'Oversupply jagung Jawa Timur', desc:'Risiko harga anjlok jika tidak didistribusikan.', conf:74, days:21},
+];
+
+const ANGGOTA = [
+  {nama:'Suwandi Hartono',lahan:'3.2 Ha',komoditas:'Padi IR64',status:'aktif',panen:'24 Feb',nilai:18200000,rating:4.9},
+  {nama:'Dewi Rahayu',lahan:'1.8 Ha',komoditas:'Kedelai',status:'aktif',panen:'15 Mar',nilai:9800000,rating:4.7},
+  {nama:'Bambang Susilo',lahan:'4.0 Ha',komoditas:'Jagung',status:'warning',panen:'10 Mar',nilai:21000000,rating:4.5},
+  {nama:'Siti Aminah',lahan:'2.1 Ha',komoditas:'Padi IR64',status:'aktif',panen:'28 Feb',nilai:11500000,rating:4.8},
+  {nama:'Agus Permadi',lahan:'1.5 Ha',komoditas:'Cabai',status:'aktif',panen:'5 Mar',nilai:27000000,rating:4.6},
+  {nama:'Rini Wulandari',lahan:'2.8 Ha',komoditas:'Bawang',status:'hold',panen:'20 Mar',nilai:15400000,rating:4.4},
+];
+
+const GUDANG = [
+  {nama:'Gudang Karawang Utara',lok:'Karawang',kap:500,isi:340,persen:68,kom:'Beras, Jagung',kondisi:'Baik',audit:'2 Feb 2026'},
+  {nama:'Gudang Transit Priok',lok:'Jakarta',kap:1200,isi:890,persen:74,kom:'Multi-komoditas',kondisi:'Baik',audit:'28 Jan 2026'},
+  {nama:'Gudang Kupang',lok:'NTT',kap:300,isi:45,persen:15,kom:'Beras',kondisi:'Perlu Perbaikan',audit:'15 Jan 2026'},
+  {nama:'Gudang Jayapura',lok:'Papua',kap:200,isi:28,persen:14,kom:'Beras, Kedelai',kondisi:'Cukup',audit:'10 Jan 2026'},
+];
+
+const BUYER_REQ = [
+  {pembeli:'PT Sumber Pangan',kom:'Beras IR64',vol:'50 ton',harga:13500,deadline:'12 Feb 2026'},
+  {pembeli:'CV Maju Jaya',kom:'Kedelai Non-GMO',vol:'15 ton',harga:11200,deadline:'20 Feb 2026'},
+  {pembeli:'UD Berkah Tani',kom:'Jagung Pipil',vol:'30 ton',harga:5500,deadline:'1 Mar 2026'},
+];
+
+const OPS_LOG = [
+  {tgl:'28 Jan 2026',rute:'Karawang → Jakarta',vol:'500 kg',status:'selesai',feedback:'Tepat waktu, kualitas baik'},
+  {tgl:'15 Jan 2026',rute:'Karawang → Bandung',vol:'1.2 ton',status:'selesai',feedback:'Delay 2 jam'},
+  {tgl:'5 Jan 2026',rute:'Kediri → Surabaya',vol:'2 ton',status:'selesai',feedback:'Tepat waktu'},
+];
+
+const BUFFER_NASIONAL = [
+  {gudang:'Bulog Jabar',lok:'Bandung',kap:5000,isi:3200,persen:64,kom:'Beras',status:'Siap Rilis'},
+  {gudang:'Bulog Jatim',lok:'Surabaya',kap:8000,isi:6100,persen:76,kom:'Beras, Jagung',status:'Siap Rilis'},
+  {gudang:'Bulog NTT',lok:'Kupang',kap:2000,isi:280,persen:14,kom:'Beras',status:'Cadangan Minimal'},
+  {gudang:'Bulog Papua',lok:'Jayapura',kap:1500,isi:180,persen:12,kom:'Beras',status:'Cadangan Minimal'},
+  {gudang:'Bulog Sulsel',lok:'Makassar',kap:6000,isi:4800,persen:80,kom:'Beras, Kakao',status:'Siap Rilis'},
+];
+
+const PANEN_HISTORY = [
+  {musim:'Okt 2025',komoditas:'Padi IR64',vol:'3.2 ton',harga:5100,pendapatan:16320000},
+  {musim:'Apr 2025',komoditas:'Jagung',vol:'2.8 ton',harga:2000,pendapatan:5600000},
+  {musim:'Okt 2024',komoditas:'Padi IR64',vol:'3.5 ton',harga:4800,pendapatan:16800000},
+  {musim:'Apr 2024',komoditas:'Kedelai',vol:'1.2 ton',harga:8200,pendapatan:9840000},
+];
+
+/* ═══════════════════════════════════ */
+const fmt   = n => new Intl.NumberFormat('id-ID').format(n);
+const fmtRp = n => 'Rp ' + fmt(n);
+const fmtK  = n => n>=1e9?(n/1e9).toFixed(1)+'M':n>=1e6?(n/1e6).toFixed(1)+'jt':n>=1e3?(n/1e3).toFixed(0)+'rb':String(n);
+const esc   = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+function confRing(val, color='#5ba3f5', size=44) {
+  const r=16, circ=2*Math.PI*r, dash=circ*(val/100), gap=circ-dash;
+  return `<div class="conf-ring" style="width:${size}px;height:${size}px">
+    <svg width="${size}" height="${size}" viewBox="0 0 40 40">
+      <circle cx="20" cy="20" r="${r}" fill="none" stroke="#e8e4dd" stroke-width="3"/>
+      <circle cx="20" cy="20" r="${r}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round"
+        stroke-dasharray="${dash} ${gap}"/>
+    </svg>
+    <div class="val" style="color:${color};font-size:9px">${val}%</div>
+  </div>`;
+}
+
+function sparkline(hist, up, w=60, h=28) {
+  const mn=Math.min(...hist),mx=Math.max(...hist),r=mx-mn||1;
+  const pts=hist.map((v,i)=>`${(i/(hist.length-1))*w},${h-((v-mn)/r)*(h-6)-3}`).join(' ');
+  const col=up===true?'#ef4444':up===false?'#16a34a':'#d97706';
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="overflow:visible"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
+function trendTag(c) {
+  const sign=c.trend==='up'?'↑ +':c.trend==='down'?'↓ −':'→ ';
+  const col=c.trend==='up'?'text-red-500':c.trend==='down'?'text-green-600':'text-amber-500';
+  return `<span class="${col} text-xs font-bold">${sign}${c.ch}%</span>`;
+}
+
+function statusBadge(s) {
+  const m={
+    confirmed:['Confirmed','bg-green-100 text-green-700'],
+    pending:['Menunggu','bg-amber-100 text-amber-700'],
+    ai_match:['AI Match','bg-blue-100 text-blue-700'],
+    dalam_perjalanan:['Dalam Perjalanan','bg-blue-100 text-blue-700'],
+    menunggu_pickup:['Menunggu Pickup','bg-amber-100 text-amber-700'],
+    surplus:['Surplus','bg-green-100 text-green-700'],
+    defisit:['Defisit','bg-red-100 text-red-700'],
+    seimbang:['Seimbang','bg-amber-100 text-amber-700'],
+  };
+  const[l,c]=m[s]||['—','bg-stone-100 text-stone-400'];
+  return `<span class="${c} text-[10px] font-semibold px-2 py-0.5 rounded-full">${l}</span>`;
+}
+
+function aiCardHTML(rec) {
+  const isBg  = rec.type==='warn'?'ai-card-warn':rec.type==='prescribe'?'ai-card-prescribe':'ai-card-bg';
+  const badgeC= rec.type==='warn'?'red':rec.type==='prescribe'?'green':'blue';
+  const color = rec.type==='warn'?'#ef4444':rec.type==='prescribe'?'#16a34a':'#3b82f6';
+  const techId = `tech-mob-${rec.id}`;
+  return `
+  <div class="ai-card ${rec.type} ${isBg} fi">
+    <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px">
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          <span class="ai-badge ${badgeC}">${esc(rec.tag)}</span>
+          <span style="font-size:10px;color:#9c9a92">${esc(rec.label)}</span>
+        </div>
+        <div style="font-size:14px;font-weight:800;color:#1c1a17;line-height:1.25">${esc(rec.title)}</div>
+      </div>
+      ${confRing(rec.conf, color, 42)}
+    </div>
+    <div style="font-size:12px;color:#6b6966;line-height:1.6;margin-bottom:10px;padding:10px;background:rgba(0,0,0,.04);border-radius:12px">${esc(rec.reason)}</div>
+    <div id="${techId}" style="display:none" class="tech-spec fi">
+      <div style="font-weight:800;margin-bottom:4px;color:#1e3a5f;font-size:9px;border-bottom:1px solid #cbd5e1;padding-bottom:2px">DIAGNOSTIC MOBILE V4.2</div>
+      ${rec.tech || 'Analyzing local node...'}
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <div><div style="font-size:8px">EDGE LNC</div><div style="font-weight:800;color:#1e3a5f">8ms</div></div>
+        <div><div style="font-size:8px">ACCURACY</div><div style="font-weight:800;color:#16a34a">99.1%</div></div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px">
+      <button style="font-size:10px;color:#9c9a92;font-weight:700;text-decoration:underline" onclick="toggleTech('${techId}')">Technical Detail</button>
+      <button style="background:${color};color:#fff;font-size:11px;font-weight:700;padding:8px 16px;border-radius:10px" class="tap" onclick="executeAIAction('${rec.action}', ${rec.id})">${esc(rec.action)}</button>
+    </div>
+  </div>`;
+}
+
+function toggleTech(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+/* ═══════════════════════════════════ */
+const S = {
+  user:null, tab:'beranda',
+  hargaSel:0, matchTab:'heatmap', akunTab:'logistik',
+};
+function set(patch){Object.assign(S,patch);render();}
+
+/* ═══════════════════════════════════ */
+function renderNav() {
+  const role=S.user.role;
+  const accent=APPS[role].accent;
+  const tabs=[
+    {id:'beranda',l:'Beranda',   svg:`<svg viewBox="0 0 24 24" fill="none" class="w-5 h-5" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>`},
+    {id:'ai',     l:'AI Insight',svg:`<svg viewBox="0 0 24 24" fill="none" class="w-5 h-5" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>`},
+    {id:'data',   l:'Data',      svg:`<svg viewBox="0 0 24 24" fill="none" class="w-5 h-5" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`},
+    {id:'operasi',l:'Operasi',   svg:`<svg viewBox="0 0 24 24" fill="none" class="w-5 h-5" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`},
+    {id:'akun',   l:'Akun',      svg:`<svg viewBox="0 0 24 24" fill="none" class="w-5 h-5" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`},
+  ];
+  return `<nav class="bottom-nav">${tabs.map(t=>{
+    const active=S.tab===t.id;
+    const col=active?'color:'+accent:'color:#a8a5a0';
+    const bdr=active?`border-top:2px solid ${accent}`:'border-top:2px solid transparent';
+    return `<button class="flex flex-col items-center justify-center flex-1 py-2.5 gap-0.5" style="${col};${bdr}" data-nav="${t.id}">
+      ${t.svg}<span style="font-size:10px;font-weight:600">${t.l}</span>
+    </button>`;
+  }).join('')}</nav>`;
+}
+
+/* ═══════════════════════════════════ */
+function renderLogin() {
+  const roles=[
+    {role:'koperasi',   e:'🏢', label:'Koperasi Intelligence', sub:'Decision Execution Tool',    border:'#3b82f6', bg:'#eff6ff', tc:'#1d4ed8'},
+    {role:'petani',     e:'👨‍🌾', label:'Farmer Assistant',       sub:'Guided Farming',             border:'#16a34a', bg:'#f0fdf4', tc:'#15803d'},
+    {role:'pemerintah', e:'📋', label:'Government Dashboard',    sub:'Policy Decision Support',    border:'#9333ea', bg:'#faf5ff', tc:'#7e22ce'},
+    {role:'pembeli',    e:'🛒', label:'Buyer Platform',          sub:'Pre-order & Supply Tracking',border:'#d97706', bg:'#fffbeb', tc:'#b45309'},
+    {role:'system_admin',e:'⚡', label:'System of Supervision',   sub:'Admin & AI Oversight Control', border:'#ef4444', bg:'#fff1f2', tc:'#be123c'},
+  ];
+  return `
+  <div style="min-height:100vh;display:flex;flex-direction:column">
+    <div class="gh" style="padding:64px 24px 40px">
+      <div style="color:#86efac;font-size:13px;margin-bottom:4px">Selamat datang di</div>
+      <div style="color:#fff;font-size:34px;font-weight:800;letter-spacing:-.02em;line-height:1.1;margin-bottom:8px">PanenHub 🌾</div>
+      <div style="color:#86efac;font-size:14px;line-height:1.6">Platform digital ketahanan pangan<br>berbasis koperasi & BUMDes Indonesia</div>
+    </div>
+    <div style="flex:1;background:#fafaf9;padding:24px 16px 32px">
+      <div style="font-size:11px;color:#a8a5a0;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Masuk sebagai</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${roles.map((r,i)=>`
+        <button class="fu d${i+1} tap" data-login="${r.role}"
+          style="background:${r.bg};border:1px solid ${r.border}22;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:14px;text-align:left">
+          <span style="font-size:36px;line-height:1">${r.e}</span>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:700;color:${r.tc}">${r.label}</div>
+            <div style="font-size:12px;color:#6b6966;margin-top:2px">${r.sub}</div>
+          </div>
+          <svg viewBox="0 0 24 24" fill="none" style="width:16px;height:16px;color:#d1cdc7;flex-shrink:0" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>`).join('')}
+      </div>
+      <div style="text-align:center;color:#c4c1bb;font-size:11px;margin-top:24px">Demo · Data embedded · Vanilla JS</div>
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════ */
+function renderBeranda() {
+  const u=S.user, app=APPS[u.role];
+  const recs=AI_RECS.filter(r=>r.role===u.role);
+  const accent=app.accent;
+
+  // Role-specific header stats
+  let stats='';
+  if(u.role==='koperasi') stats=`
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px">
+      ${[{v:u.anggota,l:'Anggota'},{v:u.matchAktif,l:'Match Aktif'},{v:fmtK(u.distribusi),l:'Distribusi/bln'}].map(x=>`
+      <div class="stat-chip"><div style="color:#fff;font-weight:800;font-size:15px">${x.v}</div><div style="color:rgba(255,255,255,.5);font-size:10px;margin-top:1px">${x.l}</div></div>`).join('')}
+    </div>`;
+  if(u.role==='petani') stats=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">
+      ${[{v:fmtRp(u.saldo),l:'Saldo Wallet'},{v:'⭐ '+u.rating,l:'Rating Petani'}].map(x=>`
+      <div class="stat-chip"><div style="color:#fff;font-weight:800;font-size:14px">${x.v}</div><div style="color:rgba(255,255,255,.5);font-size:10px;margin-top:1px">${x.l}</div></div>`).join('')}
+    </div>`;
+  if(u.role==='pemerintah') {
+    const s=REGIONS.filter(r=>r.status==='surplus').length, d=REGIONS.filter(r=>r.status==='defisit').length;
+    stats=`
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px">
+      <div class="stat-chip"><div style="color:#4ade80;font-weight:800;font-size:15px">${s}</div><div style="color:rgba(255,255,255,.5);font-size:10px">Surplus</div></div>
+      <div class="stat-chip"><div style="color:#fbbf24;font-weight:800;font-size:15px">1</div><div style="color:rgba(255,255,255,.5);font-size:10px">Seimbang</div></div>
+      <div class="stat-chip"><div style="color:#f87171;font-weight:800;font-size:15px">${d}</div><div style="color:rgba(255,255,255,.5);font-size:10px">Defisit ⚠️</div></div>
+    </div>`;
+  }
+  if(u.role==='pembeli') stats=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">
+      ${[{v:fmtRp(u.saldo),l:'Budget Tersedia'},{v:'3 aktif',l:'Pre-order'}].map(x=>`
+      <div class="stat-chip"><div style="color:#fff;font-weight:800;font-size:14px">${x.v}</div><div style="color:rgba(255,255,255,.5);font-size:10px;margin-top:1px">${x.l}</div></div>`).join('')}
+    </div>`;
+
+  return `
+  <div>
+    <div class="${app.hdr}" style="padding:48px 16px 20px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
+        <div>
+          <div style="display:inline-flex;align-items:center;gap:5px;margin-bottom:6px;background:rgba(255,255,255,.08);border-radius:12px;padding:3px 10px">
+            <div class="pls" style="width:5px;height:5px;border-radius:50%;background:#86efac"></div>
+            <span style="font-size:10px;font-weight:700;color:#86efac;text-transform:uppercase;letter-spacing:.05em">${app.label}</span>
+          </div>
+          <div style="color:#fff;font-size:20px;font-weight:800;line-height:1.2">${esc(u.name)}</div>
+          <div style="color:rgba(255,255,255,.45);font-size:12px;margin-top:2px">📌 ${esc(u.loc)}</div>
+        </div>
+        <div style="width:40px;height:40px;background:rgba(255,255,255,.12);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:14px;flex-shrink:0">${esc(u.init)}</div>
+      </div>
+      ${stats}
+    </div>
+
+    <div style="padding:16px 16px 0">
+      <!-- SoI Banner -->
+      <div style="background:#f0fdf4;border:1px solid #dcfce7;border-radius:14px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
+        <div class="pls" style="width:8px;height:8px;border-radius:50%;background:#16a34a;flex-shrink:0"></div>
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:700;color:#15803d;text-transform:uppercase;letter-spacing:.05em">System of Intelligence</div>
+          <div style="font-size:11px;color:#6b7280;margin-top:1px">Data SimKopdes → AI → Keputusan operasional</div>
+        </div>
+        <span style="font-size:11px;color:#16a34a;font-weight:700">LIVE</span>
+      </div>
+
+      <!-- AI Recommendations -->
+      <div style="font-size:13px;font-weight:700;color:#1c1a17;margin-bottom:10px">
+        Rekomendasi AI untuk Anda
+        <span style="font-size:11px;font-weight:400;color:#9c9a92;margin-left:4px">${recs.length} aktif</span>
+      </div>
+      ${recs.map(r=>aiCardHTML(r, accent)).join('')}
+
+      <!-- Quick Nav -->
+      <div style="font-size:13px;font-weight:700;color:#1c1a17;margin-bottom:10px;margin-top:4px">Menu Cepat</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+        ${[
+          {e:'🧠',l:'AI Insight',   t:'ai',   desc:'Semua rekomendasi'},
+          {e:'📊',l:'Data & Harga', t:'data',  desc:'Pasar & wilayah'},
+        ].map(a=>`
+        <button class="tap" data-nav="${a.t}" style="background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:14px;text-align:left;box-shadow:0 1px 3px rgba(0,0,0,.04)">
+          <div style="font-size:26px;margin-bottom:6px">${a.e}</div>
+          <div style="font-size:13px;font-weight:700;color:#1c1a17">${a.l}</div>
+          <div style="font-size:11px;color:#9c9a92;margin-top:2px">${a.desc}</div>
+        </button>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════ */
+function renderAI() {
+  const u=S.user, app=APPS[u.role], accent=app.accent;
+  const recs=AI_RECS.filter(r=>r.role===u.role);
+
+  setTimeout(startTraceMob, 100);
+
+  // Government gets early warning panel
+  const ewPanel = u.role==='pemerintah' ? `
+    <div style="font-size:13px;font-weight:700;color:#1c1a17;margin-bottom:10px">
+      Early Warning System
+      <span style="background:#fee2e2;color:#dc2626;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px">${EARLY_WARNINGS.length} aktif</span>
+    </div>
+    ${EARLY_WARNINGS.map(w=>`
+    <div class="ew-${w.sev}" style="padding:12px 14px;margin-bottom:8px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:#1c1a17;margin-bottom:3px">${w.icon} ${esc(w.title)}</div>
+          <div style="font-size:12px;color:#6b6966">${esc(w.desc)}</div>
+          <div style="font-size:10px;color:#9c9a92;margin-top:4px">Proyeksi: ${w.days} hari · Conf: <b style="color:${w.sev==='critical'?'#dc2626':w.sev==='high'?'#d97706':'#3b82f6'}">${w.conf}%</b></div>
+        </div>
+        ${confRing(w.conf, w.sev==='critical'?'#ef4444':w.sev==='high'?'#f59e0b':'#3b82f6', 40)}
+      </div>
+    </div>`).join('')}
+  ` : '';
+
+  // AI pipeline visual
+  const pipeline=`
+  <div style="background:#0a0f0a;border-radius:14px;padding:14px;margin-bottom:16px">
+    <div style="font-size:10px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Pipeline AI Aktif</div>
+    <div style="display:flex;align-items:center;gap:0">
+      ${[
+        {l:'SimKopdes',sub:'Data input',col:'#374151',tc:'#9ca3af'},
+        {l:'Predictive',sub:'Forecast',col:'#1e3a5f',tc:'#5ba3f5'},
+        {l:'Prescriptive',sub:'Optimize',col:'#14301a',tc:'#4ade80'},
+        {l:'Eksekusi',sub:'Koperasi',col:'#2d1b00',tc:'#fbbf24'},
+      ].map((s,i)=>`
+      ${i>0?`<div style="flex:1;height:1px;background:linear-gradient(90deg,${['#374151','#1e3a5f','#14301a'][i-1]},${s.col})"></div>`:''}
+      <div style="background:${s.col};border-radius:8px;padding:6px 8px;text-align:center;flex-shrink:0">
+        <div style="font-size:10px;font-weight:700;color:${s.tc}">${s.l}</div>
+        <div style="font-size:9px;color:#4b5563;margin-top:1px">${s.sub}</div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+
+  return `
+  <div>
+    <div class="${app.hdr}" style="padding:48px 16px 20px">
+      <div style="color:${accent};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">${app.label}</div>
+      <div style="color:#fff;font-size:22px;font-weight:800">AI Insight 🧠</div>
+      <div style="color:rgba(255,255,255,.45);font-size:12px;margin-top:2px">Rekomendasi operasional berbasis data real-time</div>
+    </div>
+    <div style="padding:16px 16px 0">
+      ${pipeline}
+      ${ewPanel}
+      <div style="font-size:13px;font-weight:700;color:#1c1a17;margin-bottom:10px">Semua Rekomendasi (${recs.length})</div>
+      ${recs.map(r=>aiCardHTML(r,accent)).join('')}
+      <div id="ai-trace-mob"></div>
+      <div style="background:#f0f0ec;border-radius:12px;padding:12px 14px;margin-bottom:20px;margin-top:10px">
+        <div style="font-size:11px;color:#6b6966;text-align:center">Model AI diperbarui setiap 6 jam · Data sumber: SimKopdes + data pasar eksternal</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+let traceIntervalMob;
+function startTraceMob() {
+  if(traceIntervalMob) clearInterval(traceIntervalMob);
+  const logBox = document.getElementById('ai-trace-mob');
+  if(!logBox) return;
+  const logs = [
+    "[EDGE] Processing local soil data...",
+    "[MODEL] Running ARIMA price estimator...",
+    "[SYNC] Ingesting KMP transaction #8421...",
+    "[OPTI] Simplex re-routing fleet #0812...",
+    "[RISK] X-Gboost: Credit score 0.94 probability...",
+    "[AI] Analyzing biomass NDVI satellite..."
+  ];
+  traceIntervalMob = setInterval(() => {
+    const line = document.createElement('div');
+    line.className = 'trace-line';
+    const ts = new Date().toLocaleTimeString('id-ID', {hour12:false, minute:'2-digit', second:'2-digit'});
+    const msg = logs[Math.floor(Math.random()*logs.length)];
+    line.innerHTML = `<span class="trace-ts">${ts}</span> <span class="trace-tag">${msg.split(' ')[0]}</span> ${msg.split(' ').slice(1).join(' ')}`;
+    logBox.prepend(line);
+    if(logBox.childNodes.length > 10) logBox.lastChild.remove();
+  }, 2500);
+}
+
+/* ═══════════════════════════════════ */
+function renderData() {
+  const u=S.user, app=APPS[u.role], accent=app.accent;
+  const tab=S.matchTab;
+  const c=COMMODITIES[S.hargaSel];
+
+  // Government gets heatmap; others get market view
+  const isGov = u.role==='pemerintah';
+
+  const marketView=`
+  <div style="margin-bottom:4px">
+    <div style="font-size:13px;font-weight:700;color:#1c1a17;margin-bottom:10px">Harga Komoditas</div>
+    <div style="background:#fff;border:1px solid #e8e4dd;border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <span style="font-size:36px">${c.foto}</span>
+        <div style="flex:1"><div style="font-size:15px;font-weight:700;color:#1c1a17">${esc(c.name)}</div><div style="font-size:12px;color:#9c9a92">${esc(c.loc)}</div></div>
+        ${trendTag(c)}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div style="background:#f0fdf4;border-radius:12px;padding:10px">
+          <div style="font-size:10px;color:#15803d;font-weight:600;margin-bottom:2px">Harga Konsumen</div>
+          <div style="font-size:18px;font-weight:800;color:#15803d">${fmtRp(c.hK)}</div>
+        </div>
+        <div style="background:#fffbeb;border-radius:12px;padding:10px">
+          <div style="font-size:10px;color:#d97706;font-weight:600;margin-bottom:2px">Harga Petani</div>
+          <div style="font-size:16px;font-weight:800;color:#d97706">${fmtRp(c.hP)}</div>
+        </div>
+      </div>
+      <div style="background:#fff0f0;border-radius:10px;padding:10px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:12px;font-weight:700;color:#dc2626">Margin distribusi diserap</span>
+          <span style="font-size:13px;font-weight:800;color:#dc2626">${Math.round((c.hK-c.hP)/c.hK*100)}%</span>
+        </div>
+        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:${Math.round((c.hK-c.hP)/c.hK*100)}%;background:#ef4444"></div></div>
+      </div>
+      <div style="font-size:11px;color:#9c9a92;margin-bottom:6px">Tren 6 bulan</div>
+      <svg width="100%" viewBox="0 0 260 48" style="overflow:visible">${(()=>{
+        const d=c.hist,mn=Math.min(...d),mx=Math.max(...d),r=mx-mn||1,W=260,H=44;
+        const pts=d.map((v,i)=>`${(i/(d.length-1))*W},${H-((v-mn)/r)*(H-8)-4}`).join(' ');
+        const col=c.trend==='up'?'#ef4444':c.trend==='down'?'#16a34a':'#d97706';
+        const bg=c.trend==='up'?'#fff0f0':c.trend==='down'?'#f0fdf4':'#fffbeb';
+        return `<polygon points="0,${H} ${pts} ${W},${H}" fill="${bg}"/>
+          <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          ${d.map((v,i)=>{const x=(i/(d.length-1))*W,y=H-((v-mn)/r)*(H-8)-4;return `<circle cx="${x}" cy="${y}" r="3.5" fill="${col}"/><circle cx="${x}" cy="${y}" r="1.5" fill="white"/>`;}).join('')}`;
+      })()}</svg>
+    </div>
+    <div style="font-size:13px;font-weight:700;color:#1c1a17;margin-bottom:8px">Semua Komoditas</div>
+    ${COMMODITIES.map((x,i)=>`
+    <button class="tap" data-harga-sel="${i}" style="width:100%;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;margin-bottom:8px;text-align:left;${S.hargaSel===i?`background:${accent}10;border:1px solid ${accent}30`:'background:#fff;border:1px solid #e8e4dd;box-shadow:0 1px 2px rgba(0,0,0,.04)'}">
+      <span style="font-size:24px">${x.foto}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:#1c1a17">${esc(x.name)}</div>
+        <div style="font-size:11px;color:#9c9a92;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(x.loc)}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:13px;font-weight:800;color:#15803d">${fmtRp(x.hK)}</div>
+        ${trendTag(x)}
+      </div>
+      ${sparkline(x.hist,x.trend==='up',52,26)}
+    </button>`).join('')}
+  </div>`;
+
+  const heatmapView=`
+  <div>
+    <div style="font-size:13px;font-weight:700;color:#1c1a17;margin-bottom:10px">Heatmap Supply-Demand Wilayah</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+      ${REGIONS.map(r=>`
+      <div class="hm-${r.status}" style="border-radius:12px;padding:10px 12px">
+        <div style="font-size:12px;font-weight:700">${esc(r.name)}</div>
+        <div style="font-size:10px;opacity:.7;margin-top:2px">${esc(r.commod)}</div>
+        ${r.vol?`<div style="font-size:12px;font-weight:800;margin-top:4px">${fmt(r.vol)} ton</div>`:'<div style="font-size:11px;opacity:.6;margin-top:4px">Stabil</div>'}
+        ${statusBadge(r.status)}
+      </div>`).join('')}
+    </div>
+    <div style="font-size:13px;font-weight:700;color:#1c1a17;margin-bottom:8px">Monitor Harga Real-time</div>
+    ${COMMODITIES.map(x=>`
+    <div style="background:#fff;border:1px solid #e8e4dd;border-radius:12px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:22px">${x.foto}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:700;color:#1c1a17">${esc(x.name)}</div>
+        <div style="font-size:11px;color:#9c9a92">Konsumen: ${fmtRp(x.hK)} · Petani: ${fmtRp(x.hP)}</div>
+      </div>
+      ${trendTag(x)}
+      ${sparkline(x.hist,x.trend==='up',48,24)}
+    </div>`).join('')}
+  </div>`;
+
+  // Buyer: pre-order list + supply tracking
+  const buyerView=`
+  <div>
+    <div style="font-size:13px;font-weight:700;color:#1c1a17;margin-bottom:10px">Pre-order Aktif</div>
+    ${PREORDERS.map(p=>`
+    <div style="background:#fff;border:1px solid #e8e4dd;border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
+        <div><div style="font-size:14px;font-weight:700;color:#1c1a17">${esc(p.kom)}</div><div style="font-size:11px;color:#9c9a92;margin-top:2px">${esc(p.petani)}</div></div>
+        ${statusBadge(p.status)}
+      </div>
+      ${p.status==='ai_match'?`<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:8px 10px;margin-bottom:8px;display:flex;align-items:center;gap:8px">
+        <span style="font-size:11px;font-weight:700;color:#1d4ed8">🤖 AI Match</span>
+        <span style="font-size:11px;color:#3b82f6">Cocok berdasarkan riwayat pembelian & musim tanam</span>
+      </div>`:''}
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
+        ${[['Volume',p.vol+' '+p.sat],['Nilai',fmtK(p.nilai)],['ETA',p.eta]].map(([k,v])=>`
+        <div style="background:#f7f6f3;border-radius:10px;padding:8px;text-align:center">
+          <div style="font-size:12px;font-weight:700;color:#1c1a17">${v}</div>
+          <div style="font-size:10px;color:#9c9a92">${k}</div>
+        </div>`).join('')}
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:11px;color:#9c9a92">AI Supply Conf: <b style="color:#3b82f6">${p.conf}%</b></div>
+        <div class="conf-bar-track" style="width:80px"><div class="conf-bar-fill" style="width:${p.conf}%;background:#3b82f6"></div></div>
+      </div>
+    </div>`).join('')}
+    <div style="font-size:13px;font-weight:700;color:#1c1a17;margin-bottom:10px;margin-top:4px">Tracking Pengiriman</div>
+    ${LOGISTIK.map(l=>`
+    <div style="background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <div style="font-size:13px;font-weight:700;color:#1c1a17">${esc(l.kom)}</div>
+        ${statusBadge(l.status)}
+      </div>
+      <div style="font-size:11px;color:#9c9a92;margin-bottom:8px">${esc(l.dari)} → ${esc(l.ke)} · ${l.eta}</div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:#9c9a92;margin-bottom:4px"><span>Progress</span><span>${l.prog}%</span></div>
+      <div class="conf-bar-track"><div class="conf-bar-fill" style="width:${l.prog}%;background:${l.status==='dalam_perjalanan'?'#3b82f6':'#f59e0b'}"></div></div>
+    </div>`).join('')}
+  </div>`;
+
+  return `
+  <div>
+    <div class="${app.hdr}" style="padding:48px 16px 20px">
+      <div style="color:${accent};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">${app.label}</div>
+      <div style="color:#fff;font-size:22px;font-weight:800">${isGov?'Heatmap & Monitor 🗺️':u.role==='pembeli'?'Pre-order & Tracking 📦':'Data & Harga 📊'}</div>
+    </div>
+    <div style="padding:16px 16px 0">
+      ${isGov?heatmapView:u.role==='pembeli'?buyerView:marketView}
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════ */
+function renderAkun() {
+  const u=S.user, app=APPS[u.role], accent=app.accent;
+
+  // Koperasi: distribution plan + anggota
+  const kopBody=`
+  <div style="font-size:13px;font-weight:700;color:#1c1a17;margin-bottom:10px">Rencana Distribusi AI</div>
+  ${AI_RECS.filter(r=>r.role==='koperasi'&&r.type==='prescribe').map(r=>`
+  <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:12px;margin-bottom:8px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+      <div style="font-size:13px;font-weight:700;color:#14532d">${esc(r.title)}</div>
+      ${confRing(r.conf,'#16a34a',40)}
+    </div>
+    <div style="font-size:11px;color:#166534;line-height:1.5">${esc(r.reason)}</div>
+    <button style="margin-top:8px;background:#16a34a;color:#fff;font-size:12px;font-weight:700;padding:6px 14px;border-radius:10px">${esc(r.action)}</button>
+  </div>`).join('')}
+  <div style="font-size:13px;font-weight:700;color:#1c1a17;margin:16px 0 10px">Logistik Aktif</div>
+  ${LOGISTIK.map(l=>`
+  <div style="background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:12px;margin-bottom:8px">
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+      <div style="font-size:13px;font-weight:700;color:#1c1a17">${esc(l.kom)}</div>
+      ${statusBadge(l.status)}
+    </div>
+    <div style="font-size:11px;color:#9c9a92;margin-bottom:6px">${esc(l.dari)} → ${esc(l.ke)}</div>
+    <div class="conf-bar-track"><div class="conf-bar-fill" style="width:${l.prog}%;background:${l.status==='dalam_perjalanan'?'#3b82f6':'#f59e0b'}"></div></div>
+    <div style="font-size:10px;color:#9c9a92;margin-top:4px">${l.eta} · ${l.prog}%</div>
+  </div>`).join('')}`;
+
+  // Petani: financing + jadwal
+  const petBody=`
+  <div style="font-size:13px;font-weight:700;color:#1c1a17;margin-bottom:10px">Jadwal Panen (AI)</div>
+  <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:14px;margin-bottom:12px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <span style="font-size:30px">🌾</span>
+      <div>
+        <div style="font-size:14px;font-weight:700;color:#14532d">Beras IR64 — Blok A (1.2 Ha)</div>
+        <div style="font-size:12px;color:#16a34a">Estimasi panen: 24 Feb 2026 (±3 hari)</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      ${[['Est. Hasil','3.6 ton'],['Harga Proyeksi','Rp 5.500/kg'],['Nilai Proyeksi','Rp 19,8 jt'],['Confidence AI','88%']].map(([k,v])=>`
+      <div style="background:rgba(255,255,255,.7);border-radius:10px;padding:8px">
+        <div style="font-size:12px;font-weight:700;color:#14532d">${v}</div>
+        <div style="font-size:10px;color:#6b7280">${k}</div>
+      </div>`).join('')}
+    </div>
+  </div>
+  <div style="font-size:13px;font-weight:700;color:#1c1a17;margin-bottom:10px">Pembiayaan</div>
+  ${[
+    {icon:'🌾',nama:'KUR Tani Cepat',prov:'Bank BRI via Koperasi',bunga:6,maks:50000000,cair:'3–5 hari'},
+    {icon:'💰',nama:'Modal Panen Cepat',prov:'Fintech Mitra OJK',bunga:8,maks:25000000,cair:'1–2 hari'},
+  ].map(f=>`
+  <div style="background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:14px;margin-bottom:10px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <span style="font-size:28px">${f.icon}</span>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700;color:#1c1a17">${f.nama}</div>
+        <div style="font-size:11px;color:#9c9a92">${f.prov}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:20px;font-weight:800;color:#16a34a">${f.bunga}%</div>
+        <div style="font-size:10px;color:#9c9a92">/tahun</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div style="background:#f7f6f3;border-radius:10px;padding:8px"><div style="font-size:11px;font-weight:700;color:#1c1a17">${fmtK(f.maks)}</div><div style="font-size:10px;color:#9c9a92">Maks pinjaman</div></div>
+      <div style="background:#f7f6f3;border-radius:10px;padding:8px"><div style="font-size:11px;font-weight:700;color:#1c1a17">${f.cair}</div><div style="font-size:10px;color:#9c9a92">Pencairan</div></div>
+    </div>
+    <button style="width:100%;border:2px solid #16a34a;color:#16a34a;font-weight:700;padding:8px;border-radius:10px;font-size:12px" class="tap" onclick="executeAIAction('Ajukan Sekarang', {})">Ajukan Sekarang</button>
+  </div>`).join('')}`;
+
+  // Gov: policy tools
+  const govBody=`
+  <div style="font-size:13px;font-weight:700;color:#1c1a17;margin-bottom:10px">Alat Kebijakan</div>
+  ${[
+    {icon:'📊',l:'Simulasi Intervensi Harga',desc:'Simulasikan dampak kebijakan HET terhadap supply chain'},
+    {icon:'🚛',l:'Koordinasi Distribusi Darurat',desc:'Aktifkan buffer stock dan koordinasi lintas koperasi'},
+    {icon:'📋',l:'Export Laporan Ketahanan Pangan',desc:'Generate laporan mingguan untuk Kemenpan/Bapanas'},
+  ].map(t=>`
+  <div style="background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px" class="tap" onclick="executeAIAction('${t.l}', {})">
+    <span style="font-size:28px">${t.icon}</span>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:700;color:#1c1a17">${t.l}</div>
+      <div style="font-size:11px;color:#9c9a92;margin-top:2px">${t.desc}</div>
+    </div>
+    <svg viewBox="0 0 24 24" fill="none" style="width:16px;height:16px;color:#d1cdc7;flex-shrink:0" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>`).join('')}`;
+
+  // Buyer: wallet + order history
+  const buyBody=`
+  <div style="background:#fff;border:1px solid #e8e4dd;border-radius:16px;padding:16px;margin-bottom:14px">
+    <div style="font-size:11px;color:#9c9a92;margin-bottom:4px">Budget Tersedia</div>
+    <div style="font-size:28px;font-weight:800;color:#1c1a17">${fmtRp(u.saldo)}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">
+      <button style="background:#d97706;color:#fff;font-weight:700;font-size:12px;padding:8px;border-radius:10px" class="tap" onclick="executeAIAction('Top Up Wallet', {})">Top Up</button>
+      <button style="border:2px solid #d97706;color:#d97706;font-weight:700;font-size:12px;padding:8px;border-radius:10px" class="tap" onclick="executeAIAction('Lihat Riwayat Transaksi', {})">Riwayat</button>
+    </div>
+  </div>
+  <div style="font-size:13px;font-weight:700;color:#1c1a17;margin-bottom:10px">AI Supply Forecast</div>
+  <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:14px;padding:14px;margin-bottom:14px">
+    <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:6px">🤖 Rekomendasi pre-order bulan ini</div>
+    ${[{k:'Beras IR64',r:'Harga naik 8% dalam 45 hari'},
+       {k:'Kedelai',r:'Stok surplus Jatim tersedia luas'}].map(x=>`
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #fde68a">
+      <span style="font-size:12px;color:#78350f;font-weight:600">${x.k}</span>
+      <span style="font-size:11px;color:#92400e">${x.r}</span>
+    </div>`).join('')}
+  </div>`;
+
+  const bodyMap={koperasi:kopBody,petani:petBody,pemerintah:govBody,pembeli:buyBody};
+
+  return `
+  <div>
+    <div class="${app.hdr}" style="padding:48px 16px 20px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <div style="width:52px;height:52px;background:rgba(255,255,255,.12);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:18px">${esc(u.init)}</div>
+        <div>
+          <div style="color:#fff;font-size:17px;font-weight:800;line-height:1.2">${esc(u.name)}</div>
+          <div style="color:rgba(255,255,255,.45);font-size:12px;margin-top:2px">${ROLE_LABEL[u.role]} · ${esc(u.loc)}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.7);font-size:10px;font-weight:600;padding:3px 10px;border-radius:12px">Bergabung ${u.join}</span>
+        <span style="background:rgba(255,255,255,.12);color:${accent};font-size:10px;font-weight:600;padding:3px 10px;border-radius:12px">${app.label}</span>
+      </div>
+    </div>
+    <div style="padding:16px 16px 0">
+      ${bodyMap[u.role]||''}
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid #e8e4dd;margin-bottom:24px">
+        <button id="logout-btn" style="width:100%;background:#fff0f0;border:1px solid #fecaca;color:#dc2626;font-weight:700;padding:12px;border-radius:14px;font-size:13px">🔄 Ganti Akun / Keluar</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════ */
+function renderOperasi() {
+  const u=S.user, app=APPS[u.role], accent=app.accent;
+  const oTab = S.opsTab || (u.role==='koperasi'?'stok':u.role==='petani'?'lahan':u.role==='pemerintah'?'wilayah':'katalog');
+  let tabDef=[], body='';
+
+  const warnBanner = `<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:10px 12px;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+    <span style="font-size:16px">⚠️</span>
+    <div style="font-size:11px;color:#92400e;line-height:1.4"><strong>Mode Manual</strong> — Data ditampilkan apa adanya tanpa filter AI. Keputusan sepenuhnya tanggung jawab operator.</div>
+  </div>`;
+
+  if(u.role==='koperasi') {
+    tabDef=[{id:'stok',l:'Stok Gudang'},{id:'permintaan',l:'Permintaan'},{id:'anggota_ops',l:'Anggota'},{id:'riwayat_ops',l:'Riwayat'}];
+    if(oTab==='stok') {
+      body = GUDANG.map(g=>`<div style="background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:12px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <div><div style="font-size:13px;font-weight:700">${esc(g.nama)}</div><div style="font-size:10px;color:#9c9a92">📌 ${esc(g.lok)} · Audit: ${g.audit}</div></div>
+          <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;${g.persen<30?'background:#fee2e2;color:#dc2626':g.persen<60?'background:#fef9c3;color:#a16207':'background:#dcfce7;color:#15803d'}">${g.persen}%</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+          ${[['Terisi',fmt(g.isi)+' ton'],['Kapasitas',fmt(g.kap)+' ton'],['Kondisi',g.kondisi]].map(([k,v])=>`<div style="background:#f7f6f3;border-radius:8px;padding:6px;text-align:center"><div style="font-size:11px;font-weight:700">${v}</div><div style="font-size:9px;color:#9c9a92">${k}</div></div>`).join('')}
+        </div>
+        <div class="conf-bar-track" style="margin-bottom:4px"><div class="conf-bar-fill" style="width:${g.persen}%;background:${g.persen<30?'#ef4444':g.persen<60?'#f59e0b':'#16a34a'}"></div></div>
+        <div style="font-size:10px;color:#6b7280;margin-bottom:8px">Komoditas: ${g.kom}</div>
+        <button class="tap" onclick="manualAction('distribusi_gudang','${esc(g.nama)}')" style="width:100%;background:${accent};color:#fff;font-size:11px;font-weight:700;padding:8px;border-radius:10px">Buat Distribusi Manual →</button>
+      </div>`).join('');
+    } else if(oTab==='permintaan') {
+      body = BUYER_REQ.map(r=>`<div style="background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:12px;margin-bottom:10px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px">${esc(r.kom)}</div>
+        <div style="font-size:11px;color:#9c9a92;margin-bottom:8px">${esc(r.pembeli)} · Deadline: ${r.deadline}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+          ${[['Volume',r.vol],['Harga Tawar',fmtRp(r.harga)+'/ton']].map(([k,v])=>`<div style="background:#f7f6f3;border-radius:8px;padding:6px;text-align:center"><div style="font-size:11px;font-weight:700">${v}</div><div style="font-size:9px;color:#9c9a92">${k}</div></div>`).join('')}
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="tap" onclick="manualAction('terima_order','${esc(r.pembeli)}')" style="flex:1;background:#16a34a;color:#fff;font-size:11px;font-weight:700;padding:8px;border-radius:10px">Terima</button>
+          <button class="tap" onclick="manualAction('negosiasi','${esc(r.pembeli)}')" style="flex:1;background:#f59e0b;color:#fff;font-size:11px;font-weight:700;padding:8px;border-radius:10px">Negosiasi</button>
+          <button class="tap" onclick="manualAction('tolak_order','${esc(r.pembeli)}')" style="flex:1;background:#ef4444;color:#fff;font-size:11px;font-weight:700;padding:8px;border-radius:10px">Tolak</button>
+        </div>
+      </div>`).join('');
+    } else if(oTab==='anggota_ops') {
+      body = ANGGOTA.map(a=>`<div style="background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:12px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <div><div style="font-size:13px;font-weight:700">${esc(a.nama)}</div><div style="font-size:10px;color:#9c9a92">${a.lahan} · ${esc(a.komoditas)}</div></div>
+          ${statusBadge(a.status)}
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+          ${[['Est. Panen',a.panen],['Nilai',fmtK(a.nilai)],['Rating','⭐ '+a.rating]].map(([k,v])=>`<div style="background:#f7f6f3;border-radius:8px;padding:6px;text-align:center"><div style="font-size:11px;font-weight:700">${v}</div><div style="font-size:9px;color:#9c9a92">${k}</div></div>`).join('')}
+        </div>
+        <button class="tap" onclick="manualAction('instruksi_petani','${esc(a.nama)}')" style="width:100%;border:1px solid ${accent};color:${accent};font-size:11px;font-weight:700;padding:8px;border-radius:10px">Kirim Instruksi →</button>
+      </div>`).join('');
+    } else {
+      body = OPS_LOG.map(l=>`<div style="background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:12px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;font-weight:700">${l.rute}</span>${statusBadge(l.status)}</div>
+        <div style="font-size:11px;color:#9c9a92">${l.tgl} · ${l.vol}</div>
+        <div style="font-size:11px;color:#6b7280;margin-top:4px">📌 ${l.feedback}</div>
+      </div>`).join('');
+    }
+  } else if(u.role==='petani') {
+    tabDef=[{id:'lahan',l:'Lahan Saya'},{id:'pasar',l:'Harga Pasar'},{id:'kredit',l:'Pembiayaan'},{id:'riwayat_panen',l:'Riwayat'}];
+    if(oTab==='lahan') {
+      body = `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:14px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:28px">🌾</span><div><div style="font-size:14px;font-weight:700;color:#14532d">Blok A — Padi IR64</div><div style="font-size:11px;color:#16a34a">1.2 Ha · Tanam: 15 Nov 2025</div></div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+          ${[['Est. Panen','24 Feb 2026'],['Est. Hasil','3.6 ton'],['Kondisi Cuaca','☀️ Cerah'],['Kelembaban','68%']].map(([k,v])=>`<div style="background:rgba(255,255,255,.7);border-radius:8px;padding:6px;text-align:center"><div style="font-size:11px;font-weight:700;color:#14532d">${v}</div><div style="font-size:9px;color:#6b7280">${k}</div></div>`).join('')}
+        </div>
+        <button class="tap" onclick="manualAction('lapor_kondisi','Blok A')" style="width:100%;background:#16a34a;color:#fff;font-size:11px;font-weight:700;padding:8px;border-radius:10px">Lapor Kondisi Terkini →</button>
+      </div>
+      <div style="background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:14px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:28px">🌽</span><div><div style="font-size:14px;font-weight:700">Blok B — Jagung</div><div style="font-size:11px;color:#9c9a92">1.3 Ha · Tanam: 20 Okt 2025</div></div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+          ${[['Est. Panen','10 Mar 2026'],['Est. Hasil','2.8 ton'],['Kondisi Cuaca','🌧️ Hujan'],['Kelembaban','82%']].map(([k,v])=>`<div style="background:#f7f6f3;border-radius:8px;padding:6px;text-align:center"><div style="font-size:11px;font-weight:700">${v}</div><div style="font-size:9px;color:#9c9a92">${k}</div></div>`).join('')}
+        </div>
+        <button class="tap" onclick="manualAction('lapor_kondisi','Blok B')" style="width:100%;border:1px solid #16a34a;color:#16a34a;font-size:11px;font-weight:700;padding:8px;border-radius:10px">Lapor Kondisi Terkini →</button>
+      </div>`;
+    } else if(oTab==='pasar') {
+      body = COMMODITIES.map(c=>`<div style="background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:12px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <span style="font-size:24px">${c.foto}</span>
+          <div style="flex:1"><div style="font-size:13px;font-weight:700">${esc(c.name)}</div><div style="font-size:10px;color:#9c9a92">${esc(c.loc)} · Stok: ${fmt(c.stok)} kg</div></div>
+          ${trendTag(c)}
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+          ${[['Harga Konsumen',fmtRp(c.hK)],['Harga Petani',fmtRp(c.hP)],['Margin Hilang',Math.round((c.hK-c.hP)/c.hK*100)+'%']].map(([k,v])=>`<div style="background:#f7f6f3;border-radius:8px;padding:6px;text-align:center"><div style="font-size:11px;font-weight:700">${v}</div><div style="font-size:9px;color:#9c9a92">${k}</div></div>`).join('')}
+        </div>
+        <button class="tap" onclick="manualAction('jual_pasar','${esc(c.name)}')" style="width:100%;border:1px solid ${accent};color:${accent};font-size:11px;font-weight:700;padding:8px;border-radius:10px">Jual di Pasar →</button>
+      </div>`).join('');
+    } else if(oTab==='kredit') {
+      body = [{nama:'KUR Tani Cepat',prov:'Bank BRI',bunga:6,tenor:12,maks:50000000,cair:'3-5 hari',syarat:'KTP, KK, Sertifikat Lahan'},{nama:'Modal Panen Cepat',prov:'Fintech OJK',bunga:8,tenor:6,maks:25000000,cair:'1-2 hari',syarat:'KTP, Kartu Anggota'},{nama:'Kredit Saprotan',prov:'Koperasi',bunga:4,tenor:4,maks:10000000,cair:'Langsung',syarat:'Kartu Anggota'}].map(f=>`<div style="background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:12px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px"><div><div style="font-size:13px;font-weight:700">${f.nama}</div><div style="font-size:10px;color:#9c9a92">${f.prov}</div></div><div style="text-align:right"><div style="font-size:20px;font-weight:800;color:#16a34a">${f.bunga}%</div><div style="font-size:9px;color:#9c9a92">/tahun</div></div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+          ${[['Plafon',fmtK(f.maks)],['Tenor',f.tenor+' bln'],['Cair',f.cair]].map(([k,v])=>`<div style="background:#f7f6f3;border-radius:8px;padding:6px;text-align:center"><div style="font-size:11px;font-weight:700">${v}</div><div style="font-size:9px;color:#9c9a92">${k}</div></div>`).join('')}
+        </div>
+        <div style="font-size:10px;color:#6b7280;margin-bottom:8px">📋 Syarat: ${f.syarat}</div>
+        <button class="tap" onclick="manualAction('ajukan_kredit','${f.nama}')" style="width:100%;background:${accent};color:#fff;font-size:11px;font-weight:700;padding:8px;border-radius:10px">Ajukan Manual →</button>
+      </div>`).join('');
+    } else {
+      body = PANEN_HISTORY.map(p=>`<div style="background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:12px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;font-weight:700">${p.komoditas}</span><span style="font-size:11px;color:#9c9a92">${p.musim}</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+          ${[['Volume',p.vol],['Harga Jual',fmtRp(p.harga)+'/kg'],['Pendapatan',fmtK(p.pendapatan)]].map(([k,v])=>`<div style="background:#f7f6f3;border-radius:8px;padding:6px;text-align:center"><div style="font-size:11px;font-weight:700">${v}</div><div style="font-size:9px;color:#9c9a92">${k}</div></div>`).join('')}
+        </div>
+      </div>`).join('');
+    }
+  } else if(u.role==='pemerintah') {
+    tabDef=[{id:'wilayah',l:'Status Wilayah'},{id:'buffer',l:'Stok Buffer'},{id:'harga_monitor',l:'Monitor Harga'},{id:'log_intervensi',l:'Log Intervensi'}];
+    if(oTab==='wilayah') {
+      body = REGIONS.map(r=>`<div style="background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:12px;margin-bottom:10px;border-left:4px solid ${r.status==='surplus'?'#16a34a':r.status==='defisit'?'#ef4444':'#f59e0b'}">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px"><div style="font-size:13px;font-weight:700">${esc(r.name)}</div>${statusBadge(r.status)}</div>
+        <div style="font-size:11px;color:#9c9a92;margin-bottom:6px">Komoditas: ${r.commod}</div>
+        ${r.vol?`<div style="font-size:15px;font-weight:800;margin-bottom:8px">${fmt(r.vol)} ton</div>`:''}
+        <button class="tap" onclick="manualAction('koordinasi_wilayah','${esc(r.name)}')" style="width:100%;border:1px solid ${accent};color:${accent};font-size:11px;font-weight:700;padding:8px;border-radius:10px">Koordinasi Distribusi →</button>
+      </div>`).join('');
+    } else if(oTab==='buffer') {
+      body = BUFFER_NASIONAL.map(b=>`<div style="background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:12px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <div><div style="font-size:13px;font-weight:700">${esc(b.gudang)}</div><div style="font-size:10px;color:#9c9a92">📌 ${esc(b.lok)} · ${b.kom}</div></div>
+          <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;${b.status==='Cadangan Minimal'?'background:#fee2e2;color:#dc2626':'background:#dcfce7;color:#15803d'}">${b.status}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+          ${[['Terisi',fmt(b.isi)+' / '+fmt(b.kap)+' ton'],['Kapasitas',b.persen+'%']].map(([k,v])=>`<div style="background:#f7f6f3;border-radius:8px;padding:6px;text-align:center"><div style="font-size:11px;font-weight:700">${v}</div><div style="font-size:9px;color:#9c9a92">${k}</div></div>`).join('')}
+        </div>
+        <div class="conf-bar-track" style="margin-bottom:8px"><div class="conf-bar-fill" style="width:${b.persen}%;background:${b.persen<30?'#ef4444':'#16a34a'}"></div></div>
+        <button class="tap" onclick="manualAction('rilis_buffer','${esc(b.gudang)}')" style="width:100%;background:${b.status==='Cadangan Minimal'?'#ef4444':accent};color:#fff;font-size:11px;font-weight:700;padding:8px;border-radius:10px">Rilis Buffer Stock →</button>
+      </div>`).join('');
+    } else if(oTab==='harga_monitor') {
+      body = COMMODITIES.map(c=>`<div style="background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:12px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><span style="font-size:22px">${c.foto}</span><div style="flex:1"><div style="font-size:13px;font-weight:700">${esc(c.name)}</div><div style="font-size:10px;color:#9c9a92">${esc(c.loc)}</div></div>${trendTag(c)}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+          ${[['Konsumen',fmtRp(c.hK)],['Petani',fmtRp(c.hP)]].map(([k,v])=>`<div style="background:#f7f6f3;border-radius:8px;padding:6px;text-align:center"><div style="font-size:11px;font-weight:700">${v}</div><div style="font-size:9px;color:#9c9a92">${k}</div></div>`).join('')}
+        </div>
+        ${sparkline(c.hist,c.trend==='up',320,36)}
+        <button class="tap" onclick="manualAction('tetapkan_het','${esc(c.name)}')" style="width:100%;margin-top:8px;border:1px solid ${accent};color:${accent};font-size:11px;font-weight:700;padding:8px;border-radius:10px">Tetapkan HET Sementara →</button>
+      </div>`).join('');
+    } else {
+      body = [{tgl:'29 Jan 2026',tipe:'Distribusi buffer',wil:'NTT, Papua',status:'dalam_perjalanan',dampak:'Harga stabil 14 hari'},{tgl:'22 Jan 2026',tipe:'HET cabai sementara',wil:'Jawa',status:'confirmed',dampak:'Harga turun 12%'},{tgl:'15 Jan 2026',tipe:'Subsidi pupuk',wil:'Jabar, Jatim',status:'warning',dampak:'Produksi +8%'}].map(l=>`<div style="background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:12px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;font-weight:700">${l.tipe}</span>${statusBadge(l.status)}</div>
+        <div style="font-size:11px;color:#9c9a92">${l.tgl} · ${l.wil}</div>
+        <div style="font-size:11px;color:#16a34a;margin-top:4px">📈 Dampak: ${l.dampak}</div>
+      </div>`).join('');
+    }
+  } else if(u.role==='pembeli') {
+    tabDef=[{id:'katalog',l:'Katalog Supplier'},{id:'po_aktif',l:'PO Aktif'},{id:'tracking_ops',l:'Tracking'}];
+    if(oTab==='katalog') {
+      body = [{kop:'KUD Karya Tani',lok:'Karawang',kom:'Beras, Jagung',stok:'12.5K ton',rating:4.8,cert:'Organik, SNI'},{kop:'KUD Harapan Tani',lok:'Kediri',kom:'Jagung, Kedelai',stok:'8.2K ton',rating:4.6,cert:'SNI'},{kop:'KUD Bawang Mas',lok:'Brebes',kom:'Bawang Merah',stok:'4.2K ton',rating:4.5,cert:'SNI'}].map(s=>`<div style="background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:12px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px"><div><div style="font-size:13px;font-weight:700">${esc(s.kop)}</div><div style="font-size:10px;color:#9c9a92">📌 ${s.lok} · ⭐ ${s.rating}</div></div><span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:#dcfce7;color:#15803d">${s.cert}</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+          ${[['Komoditas',s.kom],['Stok Tersedia',s.stok]].map(([k,v])=>`<div style="background:#f7f6f3;border-radius:8px;padding:6px;text-align:center"><div style="font-size:11px;font-weight:700">${v}</div><div style="font-size:9px;color:#9c9a92">${k}</div></div>`).join('')}
+        </div>
+        <button class="tap" onclick="manualAction('buat_po','${esc(s.kop)}')" style="width:100%;background:${accent};color:#fff;font-size:11px;font-weight:700;padding:8px;border-radius:10px">Buat PO Manual →</button>
+      </div>`).join('');
+    } else if(oTab==='po_aktif') {
+      body = PREORDERS.map(p=>`<div style="background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:12px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px"><div style="font-size:13px;font-weight:700">${esc(p.kom)}</div>${statusBadge(p.status)}</div>
+        <div style="font-size:11px;color:#9c9a92;margin-bottom:6px">${esc(p.petani)} · ETA: ${p.eta}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+          ${[['Volume',p.vol+' '+p.sat],['Harga',fmtRp(p.harga)+'/ton'],['Nilai',fmtK(p.nilai)]].map(([k,v])=>`<div style="background:#f7f6f3;border-radius:8px;padding:6px;text-align:center"><div style="font-size:11px;font-weight:700">${v}</div><div style="font-size:9px;color:#9c9a92">${k}</div></div>`).join('')}
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="tap" onclick="manualAction('ubah_po','${esc(p.kom)}')" style="flex:1;border:1px solid ${accent};color:${accent};font-size:11px;font-weight:700;padding:8px;border-radius:10px">Ubah</button>
+          <button class="tap" onclick="manualAction('batalkan_po','${esc(p.kom)}')" style="flex:1;border:1px solid #ef4444;color:#ef4444;font-size:11px;font-weight:700;padding:8px;border-radius:10px">Batalkan</button>
+        </div>
+      </div>`).join('');
+    } else {
+      body = LOGISTIK.map(l=>`<div style="background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:12px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;font-weight:700">${esc(l.kom)}</span>${statusBadge(l.status)}</div>
+        <div style="font-size:11px;color:#9c9a92;margin-bottom:6px">${esc(l.dari)} → ${esc(l.ke)} · ${l.eta}</div>
+        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:${l.prog}%;background:#3b82f6"></div></div>
+        <div style="font-size:10px;color:#9c9a92;margin-top:4px">Progress: ${l.prog}%</div>
+      </div>`).join('');
+    }
+  }
+
+  return `
+  <div>
+    <div class="${app.hdr}" style="padding:48px 16px 20px">
+      <div style="color:${accent};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">${app.label}</div>
+      <div style="color:#fff;font-size:22px;font-weight:800">Operasi Manual 🔧</div>
+      <div style="color:rgba(255,255,255,.45);font-size:12px;margin-top:2px">Data mentah — keputusan di tangan Anda</div>
+    </div>
+    <div style="padding:16px 16px 0">
+      <div class="scroll-x" style="display:flex;gap:6px;margin-bottom:14px;padding-bottom:4px">
+        ${tabDef.map(t=>`<button onclick="set({opsTab:'${t.id}'})" style="padding:8px 14px;border-radius:10px;font-size:11px;font-weight:700;white-space:nowrap;${oTab===t.id?`background:${accent};color:#fff`:'background:#fff;color:#6b7280;border:1px solid #e8e4dd'}">${t.l}</button>`).join('')}
+      </div>
+      ${warnBanner}
+      ${body}
+    </div>
+  </div>`;
+}
+
+function manualAction(type, target) {
+  let t='Operasi Manual', b='', f='';
+  const u=S.user;
+  b = `<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:10px 12px;margin-bottom:14px">
+    <div style="font-size:11px;font-weight:700;color:#92400e">⚠️ AKSI MANUAL — Tanpa Rekomendasi AI</div>
+    <div style="font-size:11px;color:#a16207;margin-top:2px">Keputusan ini dibuat berdasarkan penilaian manusia terhadap data mentah.</div>
+  </div>
+  <div style="font-size:13px;font-weight:700;margin-bottom:8px">Target: ${target}</div>
+  <div style="background:#f7f6f3;border-radius:12px;padding:12px;margin-bottom:12px">
+    <div style="font-size:11px;font-weight:700;margin-bottom:6px">Catatan Operasi (Wajib)</div>
+    <textarea id="manual-note" placeholder="Jelaskan alasan dan rencana eksekusi Anda..." style="width:100%;height:60px;border:1px solid #e8e4dd;border-radius:8px;padding:8px;font-size:12px;resize:none;font-family:inherit"></textarea>
+  </div>
+  <div style="margin-bottom:12px">
+    <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
+      <input type="checkbox" id="manual-check" style="margin-top:2px">
+      <span style="font-size:11px;color:#6b7280">Saya telah memverifikasi data di lapangan dan bertanggung jawab penuh atas keputusan ini.</span>
+    </label>
+  </div>`;
+  f = `<button class="btn-ghost" onclick="closeModal()">Batal</button>
+  <button class="btn-primary" onclick="submitManual('${type}','${target}')">Eksekusi [MANUAL-EXEC] →</button>`;
+  t = type.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase()) + ': ' + target;
+  openModal(t, b, f);
+}
+
+function submitManual(type, target) {
+  const note = document.getElementById('manual-note');
+  const check = document.getElementById('manual-check');
+  if(!note || !note.value.trim()) { alert('Mohon isi catatan operasi.'); return; }
+  if(!check || !check.checked) { alert('Mohon centang checklist verifikasi.'); return; }
+  confirmFlow('Operasi Manual Berhasil', `[MANUAL-EXEC] ${type}: ${target}\n\nCatatan: ${note.value}\n\nDicatat dalam audit log.`);
+}
+
+function renderAdmin() {
+  const u=S.user, app=APPS[u.role], accent=app.accent;
+  const aTab = S.adminTab || 'users';
+
+  let sub = '';
+  if(aTab === 'users') {
+    sub = USERS.map(usr => `
+    <div style="background:#fff;border:1px solid #e8e4dd;border-radius:12px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
+      <div style="width:36px;height:36px;border-radius:50%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px">${usr.init}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700">${esc(usr.name)}</div>
+        <div style="font-size:11px;color:#9ca3af">${usr.role} · ${usr.loc}</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button style="color:#3b82f6;font-size:11px;font-weight:700" onclick="alert('Edit logic simulated')">EDIT</button>
+        <button style="color:#ef4444;font-size:11px;font-weight:700" onclick="deleteUser(${usr.id})">DEL</button>
+      </div>
+    </div>`).join('') + `<button class="btn-primary" style="margin-top:12px" onclick="alert('Add User Modal simulated')">+ Tambah User</button>`;
+  } else {
+    sub = `
+    <div style="background:#0a0f0a;border-radius:14px;padding:12px;margin-bottom:16px">
+      <div style="color:#4ade80;font-size:10px;font-weight:800;margin-bottom:8px">LIVE AI SUPERVISION TERMINAL</div>
+      <div id="admin-terminal" style="font-family:'DM Mono',monospace;font-size:9px;color:#4ade80;height:80px;overflow-y:auto;opacity:.8">
+        <div>[SYSTEM] AI Engine v4.2 Online...</div>
+        <div>[AUTH] Human-in-the-loop required for prescriptive actions...</div>
+      </div>
+    </div>
+    ` + AI_RECS.map(r => `
+    <div class="ai-card ${r.type} ai-card-bg" style="padding:12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span class="ai-badge blue">${r.tag}</span>
+        <span style="font-size:10px;font-weight:700;color:${accent}">${r.conf}%</span>
+      </div>
+      <div style="font-size:12px;font-weight:800">${esc(r.title)}</div>
+      <div style="font-size:11px;color:#6b7280;margin:4px 0">${esc(r.reason.substring(0,80))}...</div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button class="btn-primary" style="padding:6px 0;font-size:10px;flex:1" onclick="approveAI(${r.id})">Approve & EXEC</button>
+        <button class="btn-ghost" style="padding:6px 0;font-size:10px;flex:1" onclick="alert('Rejected')">Reject</button>
+      </div>
+    </div>`).join('');
+  }
+
+  return `
+  <div>
+    <div class="${app.hdr}" style="padding:48px 16px 20px">
+       <div style="color:${accent};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Otoritas Penuh</div>
+       <div style="color:#fff;font-size:22px;font-weight:800">Admin Command Center ⚡</div>
+    </div>
+    <div style="padding:16px">
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        ${['users','oversight'].map(t => `<button onclick="set({adminTab:'${t}'})" style="flex:1;padding:10px;border-radius:12px;font-size:12px;font-weight:700;${aTab===t?`background:#fff;color:#000`:`background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#9ca3af`}">${t.toUpperCase()}</button>`).join('')}
+      </div>
+      ${sub}
+    </div>
+  </div>`;
+}
+
+const ROLE_LABEL={koperasi:'Koperasi / BUMDes',petani:'Petani',pemerintah:'Pemerintah',pembeli:'Pembeli',system_admin:'System Admin'};
+
+/* ═══════════════════════════════════ */
+function render() {
+  const shell=document.getElementById('shell');
+  if(!S.user){shell.innerHTML=renderLogin();bindLogin();return;}
+  const screens={beranda:renderBeranda,ai:renderAI,data:renderData,operasi:renderOperasi,akun:renderAkun,admin:renderAdmin};
+  const fn = (S.user.role === 'system_admin' && S.tab === 'beranda') ? renderAdmin : (screens[S.tab]||renderBeranda);
+  shell.innerHTML=`<div class="tab-content">${fn()}</div>${renderNav()}`;
+  bindApp();
+}
+
+/* ═══════════════════════════════════ */
+function bindLogin(){
+  document.querySelectorAll('[data-login]').forEach(el=>el.addEventListener('click',()=>{
+    set({user:USERS.find(x=>x.role===el.dataset.login),tab:'beranda'});
+  }));
+}
+function bindApp(){
+  document.querySelectorAll('[data-nav]').forEach(el=>el.addEventListener('click',()=>set({tab:el.dataset.nav})));
+  const lb=document.getElementById('logout-btn');
+  if(lb)lb.addEventListener('click',()=>set({user:null,tab:'beranda',hargaSel:0,matchTab:'heatmap'}));
+  document.querySelectorAll('[data-harga-sel]').forEach(el=>el.addEventListener('click',()=>set({hargaSel:parseInt(el.dataset.hargaSel)})));
+  document.querySelectorAll('[data-match-tab]').forEach(el=>el.addEventListener('click',()=>set({matchTab:el.dataset.matchTab})));
+}
+
+/* ═══════════════════════════════════ */
+function deleteUser(id) {
+  if(confirm("Hapus user ini?")) {
+    const idx = USERS.findIndex(u=>u.id===id);
+    if(idx>-1) USERS.splice(idx,1);
+    render();
+  }
+}
+function approveAI(id) {
+  confirmFlow("AI Action Approved", "Rekomendasi telah disetujui dan dieksekusi oleh sistem.");
+}
+
+/* ═══════════════════════════════════ */
+function closeModal() {
+  document.getElementById('modal-overlay').style.display='none';
+}
+
+function confirmFlow(title, msg) {
+  const body = `<div style="text-align:center;padding:16px 0">
+    <div style="width:72px;height:72px;background:#16a34a;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:#fff;font-size:36px;box-shadow:0 8px 16px rgba(22,163,74,.2)">&#10003;</div>
+    <div style="font-size:18px;font-weight:800;color:#1c1a17;margin-bottom:8px">${title}</div>
+    <div style="font-size:13px;color:#6b7280;line-height:1.6">${msg}</div>
+    </div>`;
+  openModal("Selesai", body, '<button class="btn-primary" onclick="closeModal()">Tutup</button>');
+}
+
+function openModal(title, body, footer) {
+  const html = `<div class="modal-box">
+    <div class="modal-hdr"><div style="font-weight:800;font-size:16px">${title}</div><button onclick="closeModal()" style="font-size:24px;color:#9c9a92">&times;</button></div>
+    <div class="modal-body">${body}</div>
+    <div class="modal-ftr">${footer || '<button class="btn-primary" onclick="closeModal()">Selesai</button>'}</div>
+    </div>`;
+  const ov = document.getElementById('modal-overlay');
+  ov.innerHTML = html;
+  ov.style.display = 'flex';
+}
+
+function executeAIAction(name, recId) {
+  const rec = AI_RECS.find(r => r.id === recId);
+  let b='', f='', t=name;
+  const supBlock = (extra) => `${extra||''}
+  <div style="background:#f1f5f9;border-radius:12px;padding:12px;margin-top:12px;border-left:3px solid #64748b">
+    <div style="font-size:11px;font-weight:700;color:#334155;margin-bottom:6px">\ud83d\udcdd Justifikasi Supervisi (Wajib)</div>
+    <textarea id="ai-justifikasi" placeholder="Jelaskan alasan Anda menyetujui rekomendasi AI ini..." style="width:100%;height:50px;border:1px solid #cbd5e1;border-radius:8px;padding:8px;font-size:12px;resize:none;font-family:inherit"></textarea>
+  </div>
+  <div style="margin-top:10px">
+    <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;margin-bottom:6px"><input type="checkbox" id="ai-check-data" style="margin-top:2px"><span style="font-size:11px;color:#6b7280">Saya telah membaca dan memahami semua data di atas.</span></label>
+    <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer"><input type="checkbox" id="ai-check-verify" style="margin-top:2px"><span style="font-size:11px;color:#6b7280">Saya bertanggung jawab atas eksekusi keputusan ini.</span></label>
+  </div>`;
+  window._vExec = function(title, msg) {
+    const j=document.getElementById('ai-justifikasi');
+    const c1=document.getElementById('ai-check-data');
+    const c2=document.getElementById('ai-check-verify');
+    const pin=document.getElementById('ai-pin');
+    if(!j||!j.value.trim()){alert('Mohon isi justifikasi supervisi.');return;}
+    if(!c1||!c1.checked||!c2||!c2.checked){alert('Mohon centang semua checklist verifikasi.');return;}
+    if(pin&&pin.value!=='1234'){alert('PIN otorisasi salah. Gunakan: 1234');return;}
+    confirmFlow(title,msg);
+  };
+  
+  if (name === 'Buat Rencana Distribusi') {
+    b = `<div style="font-size:12px;font-weight:700;margin-bottom:8px">\ud83d\udcca Data Pendukung Keputusan</div>
+    <div style="font-size:11px;color:#6b7280;margin-bottom:10px">AI merekomendasikan distribusi 280 ton beras ke NTT. Data gudang terkait:</div>
+    ${GUDANG.map(g=>`<div style="display:flex;align-items:center;gap:8px;padding:8px;background:${g.persen<30?'#fff5f5':'#f7f6f3'};border-radius:10px;margin-bottom:6px">
+      <div style="flex:1"><div style="font-size:12px;font-weight:700">${esc(g.nama)}</div><div style="font-size:10px;color:#9c9a92">${g.lok} \u00b7 ${g.kom}</div></div>
+      <div style="text-align:right"><div style="font-size:13px;font-weight:800;color:${g.persen<30?'#dc2626':'#1c1a17'}">${g.persen}%</div><div style="font-size:9px;color:#9c9a92">${fmt(g.isi)}/${fmt(g.kap)} ton</div></div>
+    </div>`).join('')}
+    <div style="font-size:12px;font-weight:700;margin:12px 0 6px">\ud83d\ude9b Perbandingan Rute</div>
+    ${[{r:'Karawang \u2192 Priok \u2192 Kupang (Laut)',w:'5 hari',c:'Rp 42jt',rsk:'Rendah',rec:true},{r:'Karawang \u2192 Surabaya \u2192 Kupang',w:'7 hari',c:'Rp 38jt',rsk:'Sedang',rec:false},{r:'Karawang \u2192 Kupang (Udara)',w:'1 hari',c:'Rp 185jt',rsk:'Rendah',rec:false}].map(x=>`<div style="padding:8px;background:${x.rec?'#f0fdf4':'#f7f6f3'};border:1px solid ${x.rec?'#bbf7d0':'#e8e4dd'};border-radius:10px;margin-bottom:6px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px;font-weight:700">${x.r}</span>${x.rec?'<span style="font-size:9px;font-weight:700;background:#16a34a;color:#fff;padding:1px 6px;border-radius:8px">REKOMENDASI</span>':''}</div>
+      <div style="display:flex;gap:12px;font-size:10px;color:#6b7280"><span>\u23f1 ${x.w}</span><span>\ud83d\udcb0 ${x.c}</span><span>\u26a0\ufe0f ${x.rsk}</span></div>
+    </div>`).join('')}
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:8px;margin-top:8px"><div style="font-size:10px;color:#1d4ed8;cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">\ud83d\udca1 Apa artinya ini? (klik)</div><div style="display:none;font-size:10px;color:#3b82f6;margin-top:4px;line-height:1.5">Gudang NTT & Papua hampir kosong (15% & 14%). Rute laut via Priok paling efisien: biaya rendah + waktu aman sebelum stok habis (8 hari).</div></div>
+    ${supBlock('<div style="font-size:11px;font-weight:700;margin-top:12px;margin-bottom:6px">Penyesuaian Volume</div><input type="number" value="280" style="width:100%;border:1px solid #e8e4dd;border-radius:8px;padding:8px;font-size:13px;font-family:inherit" /><div style="font-size:9px;color:#9c9a92;margin-top:2px">Ton (AI rekomendasikan 280)</div>')}`;
+    f = `<button class="btn-ghost" onclick="closeModal()">Batal</button><button class="btn-primary" onclick="window._vExec('Rencana Disetujui','Instruksi distribusi dikirim ke tim logistik.')">Konfirmasi </button>`;
+  } 
+  else if (name === 'Aktifkan Respons Darurat') {
+    b = `<div style="background:#fff5f5;border:1px solid #fecaca;border-radius:12px;padding:12px;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:800;color:#dc2626;margin-bottom:4px">\u26a0\ufe0f TINDAKAN KRITIS</div>
+      <div style="font-size:11px;color:#991b1b;line-height:1.5">Mengaktifkan respons darurat akan memicu rilis buffer stock Bulog ke wilayah defisit.</div>
+    </div>
+    <div style="font-size:12px;font-weight:700;margin-bottom:8px">\ud83d\udce6 Status Buffer Stock Nasional</div>
+    ${BUFFER_NASIONAL.map(b=>`<div style="display:flex;align-items:center;gap:8px;padding:8px;background:${b.persen<30?'#fff5f5':'#f7f6f3'};border-radius:10px;margin-bottom:6px">
+      <div style="flex:1"><div style="font-size:12px;font-weight:700">${esc(b.gudang)}</div><div style="font-size:10px;color:#9c9a92">${b.lok} \u00b7 ${b.kom}</div></div>
+      <div style="text-align:right"><div style="font-size:13px;font-weight:800;color:${b.persen<30?'#dc2626':'#15803d'}">${b.persen}%</div><div style="font-size:9px;color:#9c9a92">${b.status}</div></div>
+    </div>`).join('')}
+    <div style="font-size:12px;font-weight:700;margin:12px 0 6px">\ud83d\udcdc Riwayat Respons Sebelumnya</div>
+    ${[{t:'15 Des 2025',a:'Rilis buffer Kalteng',pAI:'Harga turun 8%',pReal:'Turun 6%',ak:'75%'},{t:'20 Okt 2025',a:'Redistribusi Sulsel\u2192Papua',pAI:'Stok aman 21hr',pReal:'Aman 18hr',ak:'86%'}].map(h=>`<div style="padding:8px;background:#f8fafc;border-radius:10px;margin-bottom:6px;border:1px solid #e2e8f0">
+      <div style="font-size:11px;font-weight:700">${h.t}: ${h.a}</div>
+      <div style="display:flex;gap:8px;margin-top:4px;font-size:10px;color:#6b7280"><span>AI: ${h.pAI}</span><span>Aktual: ${h.pReal}</span><span style="color:#3b82f6;font-weight:700">Akurasi: ${h.ak}</span></div>
+    </div>`).join('')}
+    ${supBlock('<div style="font-size:11px;font-weight:700;margin-top:12px;margin-bottom:6px">\ud83d\udd10 PIN Otorisasi (Wajib)</div><input id="ai-pin" type="password" maxlength="4" placeholder="PIN 4 digit" style="width:100%;border:1px solid #fecaca;border-radius:8px;padding:8px;font-size:13px;font-family:inherit;text-align:center;letter-spacing:8px" /><div style="font-size:9px;color:#9c9a92;margin-top:2px;text-align:center">Demo PIN: 1234</div>')}`;
+    f = `<button class="btn-ghost" onclick="closeModal()">Batal</button><button class="btn-primary" style="background:#dc2626" onclick="window._vExec('Respons Darurat Aktif','Rilis buffer stock dikirim ke 14 gudang.')">AKTIFKAN </button>`;
+  }
+  else if (name === 'Ajukan Sekarang') {
+    b = `<div style="font-size:12px;font-weight:700;margin-bottom:8px">\ud83d\udcca Analisis Kelayakan Kredit</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px">
+      ${[['Disiplin Bayar','92/100','#16a34a'],['Kualitas Tanah','85/100','#3b82f6'],['Rating Koperasi','4.8/5.0','#d97706'],['Riwayat 3 Tahun','88/100','#8b5cf6'],['Stabilitas Cuaca','72/100','#ef4444']].map(([k,v,c])=>`<div style="background:#f7f6f3;border-radius:10px;padding:8px"><div style="font-size:13px;font-weight:800;color:${c}">${v}</div><div style="font-size:10px;color:#6b7280">${k}</div></div>`).join('')}
+    </div>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:12px;margin-bottom:10px">
+      <div style="font-size:10px;font-weight:700;color:#16a34a">PLAFON</div>
+      <div style="font-size:24px;font-weight:800;color:#15803d">Rp 50.000.000</div>
+      <div style="font-size:11px;color:#16a34a;margin-top:2px">Bunga 6%/Thn \u00b7 Tenor 12 Bln \u00b7 Cair 3 hari</div>
+    </div>
+    <div style="font-size:12px;font-weight:700;margin-bottom:6px">\ud83d\udccb Perbandingan Produk</div>
+    ${[{n:'KUR Tani',b:6,m:'50jt',c:'3 hari'},{n:'Modal Panen',b:8,m:'25jt',c:'1 hari'},{n:'Kredit Saprotan',b:4,m:'10jt',c:'Langsung'}].map(p=>`<div style="display:flex;justify-content:space-between;padding:6px 8px;background:#f7f6f3;border-radius:8px;margin-bottom:4px;font-size:11px"><span style="font-weight:600">${p.n}</span><span style="color:#6b7280">${p.b}% \u00b7 Maks ${p.m} \u00b7 ${p.c}</span></div>`).join('')}
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:8px;margin-top:8px;font-size:11px;color:#92400e;line-height:1.5">\u26a0\ufe0f Jika harga turun 20%: Cicilan Rp 4.4jt tetap terjangkau (est. pendapatan Rp 15.8jt). <strong>AMAN</strong></div>
+    ${supBlock('<div style="font-size:11px;font-weight:700;margin-top:10px;margin-bottom:4px">Tujuan Dana</div><select style="width:100%;border:1px solid #e8e4dd;border-radius:8px;padding:8px;font-size:12px;font-family:inherit"><option>Beli bibit & pupuk</option><option>Sewa alat</option><option>Upah tenaga kerja</option><option>Lainnya</option></select>')}`;
+    f = `<button class="btn-ghost" onclick="closeModal()">Batal</button><button class="btn-primary" onclick="window._vExec('Pengajuan Diproses','KUR diteruskan ke mitra Bank.')">Ajukan </button>`;
+  }
+  else if (name === 'Kirim ke Anggota') {
+    b = `<div style="font-size:12px;font-weight:700;margin-bottom:6px">\ud83d\udc65 Daftar Anggota Target (Blok C)</div>
+    <div style="font-size:11px;color:#6b7280;margin-bottom:10px">AI rekomendasikan kedelai. Margin kedelai ${Math.round((12000-8500)/12000*100)}% lebih tinggi dari padi.</div>
+    ${ANGGOTA.map(a=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:#f7f6f3;border-radius:8px;margin-bottom:4px">
+      <div style="flex:1"><div style="font-size:11px;font-weight:700">${esc(a.nama)}</div><div style="font-size:9px;color:#9c9a92">${a.lahan} \u00b7 ${esc(a.komoditas)} \u00b7 \u2b50${a.rating}</div></div>
+      ${statusBadge(a.status)}
+    </div>`).join('')}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0">
+      <div style="background:#f0fdf4;border-radius:8px;padding:8px;text-align:center"><div style="font-size:14px;font-weight:800;color:#15803d">Rp 8.500</div><div style="font-size:9px;color:#6b7280">Kedelai/kg</div></div>
+      <div style="background:#f7f6f3;border-radius:8px;padding:8px;text-align:center"><div style="font-size:14px;font-weight:800;color:#6b7280">Rp 5.200</div><div style="font-size:9px;color:#6b7280">Padi/kg</div></div>
+    </div>
+    ${supBlock('<div style="font-size:11px;font-weight:700;margin-top:10px;margin-bottom:4px">Pesan ke Petani</div><textarea placeholder="Instruksi tambahan..." style="width:100%;height:40px;border:1px solid #e8e4dd;border-radius:8px;padding:8px;font-size:12px;resize:none;font-family:inherit"></textarea>')}`;
+    f = `<button class="btn-ghost" onclick="closeModal()">Batal</button><button class="btn-primary" onclick="window._vExec('Instruksi Terkirim','12 petani Blok C menerima notifikasi.')">Kirim </button>`;
+  }
+  else if (name === 'Konfirmasi & Lapor') {
+    b = `<div class="ar-view">
+        <div class="ar-overlay"></div>
+        <div class="ar-bbox" style="top:80px;left:60px;width:120px;height:120px"><div class="ar-label">CROP: PADI IR64</div><div style="color:#4ade80;font-size:8px;font-weight:800">HEALTH: 92%</div></div>
+        <div class="ar-bbox" style="top:180px;left:200px;width:100px;height:80px;animation-delay:0.5s"><div class="ar-label">MATURITY: 88%</div><div style="color:#4ade80;font-size:8px;font-weight:800">EST: 12 DAYS</div></div>
+        <div class="ar-stat"><div class="ar-chip"><div style="font-size:8px;color:#9ca3af">MOISTURE</div><div style="font-size:12px;font-weight:800;color:#4ade80">68%</div></div><div class="ar-chip"><div style="font-size:8px;color:#9ca3af">CONFIDENCE</div><div style="font-size:12px;font-weight:800;color:#fbbf24">0.99</div></div></div>
+      </div>
+      ${supBlock()}`;
+    f = `<button class="btn-ghost" onclick="closeModal()">Batal</button><button class="btn-primary" onclick="window._vExec('Scan Berhasil','Kualitas panen Grade A. Laporan dikirim ke Koperasi.')">Lapor </button>`;
+  }
+  else if (name === 'Siapkan Kebijakan') {
+    b = `<div style="font-size:12px;font-weight:700;margin-bottom:8px">📊 Analisis Tekanan Inflasi (Cabai)</div>
+    <div style="font-size:11px;color:#6b7280;margin-bottom:10px">Proyeksi kenaikan harga 18-25% di Pulau Jawa akibat defisit supply regional:</div>
+    <div style="height:80px">${sparkline([24000,26000,29000,33000,36000,38000,42000,46000], false, 350, 70)}</div>
+    <div style="font-size:12px;font-weight:700;margin:12px 0 6px">🚛 Status Supply Chain (Cabai Keriting)</div>
+    ${[
+      {loc:'Solok', status:'Menurun', val:'-22%', col:'#ef4444'},
+      {loc:'Garut', status:'Terhambat', val:'-15%', col:'#f59e0b'},
+      {loc:'Brebes', status:'Normal', val:'+2%', col:'#16a34a'}
+    ].map(s=>`<div style="display:flex;justify-content:space-between;padding:6px 8px;background:#f8fafc;border-radius:8px;margin-bottom:4px;font-size:11px">
+      <span style="font-weight:600">${s.loc}</span>
+      <span style="color:${s.col};font-weight:700">${s.status} (${s.val})</span>
+    </div>`).join('')}
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:8px;margin-top:10px;font-size:11px;color:#92400e;line-height:1.5">💡 <strong>Insight AI:</strong> Penurunan produksi di Solok-Garut karena musim kering akan mendorong harga di Jakarta melampaui Rp 45.000/kg dalam 14 hari.</div>
+    ${supBlock('<div style="font-size:11px;font-weight:700;margin-top:12px;margin-bottom:4px">Opsi Kebijakan TPID</div><select style="width:100%;border:1px solid #e8e4dd;border-radius:8px;padding:8px;font-size:12px;font-family:inherit"><option>Subsidi Transport (BTT) untuk Distribusi Antar Daerah</option><option>Operasi Pasar Mandiri (Koperasi Toko Tani)</option><option>Intervensi Stok Cadangan Pemerintah</option></select>')}`;
+    f = `<button class="btn-ghost" onclick="closeModal()">Batal</button><button class="btn-primary" onclick="window._vExec('Kebijakan Diaktifkan','Instruksi kebijakan inflasi (Subsidi Transport) diteruskan ke Dinas terkait.')">Aktifkan </button>`;
+  }
+  else if (name === 'Lihat Detail Forecast') {
+    b = `<div style="font-size:12px;font-weight:700;margin-bottom:8px">📈 Proyeksi Produksi Jagung (Kediri)</div>
+        <div style="height:80px">${sparkline([6200,6100,6050,5950,5850,5800,5400,5100,4800], false, 350, 70)}</div>
+        <div style="font-size:12px;font-weight:700;margin:12px 0 6px">🌧️ Anomali Cuaca & Tanah</div>
+        <table style="width:100%;font-size:10px;border-collapse:collapse;margin-bottom:10px">
+          <tr style="border-bottom:1px solid #e8e4dd"><td>Presipitasi</td><td style="color:#ef4444;text-align:right">-35% vs Avg</td></tr>
+          <tr style="border-bottom:1px solid #e8e4dd"><td>Soil Moisture</td><td style="color:#f59e0b;text-align:right">12.4% (Critical)</td></tr>
+          <tr><td>Hist. Yield</td><td style="text-align:right">5.8 Ton/Ha</td></tr>
+        </table>
+        <div class="tech-spec">LSTM Engine: Penurunan yield 1.2 Ton/Ha diproyeksikan pada panen akhir bulan.<br>Rekomendasi: Alihkan sourcing ke Jawa Timur.</div>
+        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:8px;margin-top:8px"><div style="font-size:10px;color:#1d4ed8;cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">💡 Apa artinya ini?</div><div style="display:none;font-size:10px;color:#3b82f6;margin-top:4px;line-height:1.5">Penurunan produksi jagung Kediri (18%) akan mengganggu supply pakan ternak regional. Diperlukan sourcing tambahan segera.</div></div>
+        ${supBlock('<div style="font-size:11px;font-weight:700;margin-top:12px;margin-bottom:4px">Opsi Sourcing Mitigasi</div><select style="width:100%;border:1px solid #e8e4dd;border-radius:8px;padding:8px;font-size:12px;font-family:inherit"><option>Alihkan ke Gudang Jatim (+ 5,000 ton)</option><option>Alihkan ke Gudang Jabar (+ 2,000 ton)</option><option>Hanya tingkatkan Safety Buffer</option></select>')}`;
+    f = `<button class="btn-ghost" onclick="closeModal()">Batal</button><button class="btn-primary" onclick="window._vExec('Sourcing Diaktifkan','Sourcing alternatif dialihkan dan parameter safety buffer disesuaikan.')">Eksekusi Mitigasi </button>`;
+  }
+  else {
+    b = `<div style="text-align:center;padding:16px 0"><div style="font-size:36px;margin-bottom:8px">\u2705</div><div style="font-weight:700">${name}</div><div style="font-size:12px;color:#6b7280;margin-top:4px">Aksi dilakukan.</div></div>`;
+  }
+
+  openModal(t, b, f);
+}
+
+function confirmFlow(title, sub) {
+  openModal(title, `<div style="text-align:center;padding:16px 0"><div style="width:72px;height:72px;background:#16a34a;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:#fff;font-size:36px;box-shadow:0 8px 16px rgba(22,163,74,.2)">&#10003;</div><div style="font-size:18px;font-weight:800;color:#1c1a17;margin-bottom:8px">${title}</div><div style="font-size:13px;color:#6b7280;line-height:1.6">${sub}</div></div>`, '<button class="btn-primary" onclick="closeModal()">Tutup</button>');
+}
+
+render();
+</script>
+</body>
+</html>

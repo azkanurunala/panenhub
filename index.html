@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<title>PanenHub — Platform Pangan Digital</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#0c0a09;font-family:'Plus Jakarta Sans',sans-serif}
+#app{min-height:100vh;display:flex;justify-content:center;background:#0c0a09}
+.shell{width:100%;max-width:430px;min-height:100vh;background:#fafaf9;position:relative;box-shadow:0 0 80px rgba(0,0,0,.6)}
+.gh{background:linear-gradient(145deg,#14532d 0%,#166534 55%,#15803d 100%)}
+::-webkit-scrollbar{display:none}*{scrollbar-width:none}
+.shadow-card{box-shadow:0 1px 4px rgba(0,0,0,.07),0 0 1px rgba(0,0,0,.05)}
+.tap{transition:transform .12s;cursor:pointer;user-select:none}
+.tap:active{transform:scale(.97)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.fu{animation:fadeUp .3s ease forwards;opacity:0}
+.d1{animation-delay:.04s}.d2{animation-delay:.09s}.d3{animation-delay:.14s}.d4{animation-delay:.19s}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.pls{animation:pulse 1.8s ease-in-out infinite}
+.progress{transition:width .5s ease}
+input,button,select{font-family:inherit;border:none;background:none;cursor:pointer}
+.scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.notif-overlay{position:absolute;inset:0;z-index:100;background:rgba(0,0,0,.5)}
+.notif-box{position:absolute;top:96px;left:12px;right:12px;background:#fff;border-radius:20px;box-shadow:0 8px 40px rgba(0,0,0,.2);overflow:hidden}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:1px solid #f0ece8;display:flex;z-index:50;box-shadow:0 -1px 0 rgba(0,0,0,.05)}
+.tab-content{height:100vh;overflow-y:auto;padding-bottom:72px}
+</style>
+</head>
+<body>
+<div id="app"><div class="shell" id="shell"></div></div>
+
+<script>
+/* ══════════════════════════════════════
+   DATA
+══════════════════════════════════════ */
+const USERS = [
+  {id:1,role:'petani',    name:'Pak Hendra Susanto',      init:'HS',loc:'Karawang, Jawa Barat',  koperasi:'KUD Karya Tani',       lahan:'2.5 Ha',  saldo:4250000,     rating:4.8, join:'Mar 2022', petaniId:1},
+  {id:2,role:'pembeli',   name:'Bu Sari Wulandari',       init:'SW',loc:'Jakarta Selatan',        tipe:'Pedagang Pasar Induk',                       saldo:18750000,                join:'Jan 2023', orderAktif:2},
+  {id:3,role:'koperasi',  name:'KUD Karya Tani',          init:'KT',loc:'Karawang, Jawa Barat',  anggota:245,                     modal:2400000000,                    join:'Jun 2021', matchAktif:3, distribusi:48200000},
+  {id:4,role:'pemerintah',name:'Dinas Ketahanan Pangan',  init:'DP',loc:'Kab. Karawang',         jabatan:'Admin Pangan Daerah',                                          join:'Sep 2023', wilayah:8},
+];
+const ROLE_LABEL = {petani:'Petani',pembeli:'Pembeli',koperasi:'Koperasi / BUMDes',pemerintah:'Pemerintah'};
+
+const COMMODITIES = [
+  {id:1,name:'Beras Premium IR64',   foto:'🌾',cat:'Padi',    unit:'kg',hK:14500,hP:5200, stok:12500,loc:'Karawang, Jawa Barat',   petani:'KUD Karya Tani',    pId:1,   trend:'up',  ch:2.1, hist:[13200,13500,13800,14000,14200,14500],rating:4.8,sold:2840,cert:['Organik','SNI'],    desc:'Beras premium varietas IR64 dari sawah organik Karawang. Pulen, wangi, ideal untuk konsumsi harian maupun restoran premium.'},
+  {id:2,name:'Jagung Pipil Kuning',  foto:'🌽',cat:'Palawija',unit:'kg',hK:5800, hP:2100, stok:8200, loc:'Kediri, Jawa Timur',      petani:'BUMDes Makmur Jaya',pId:null,trend:'down',ch:1.5, hist:[6200,6100,6050,5950,5850,5800],    rating:4.6,sold:5120,cert:['SNI'],          desc:'Jagung pipil kuning siap olah. Cocok untuk pakan ternak, tepung jagung, dan industri pangan.'},
+  {id:3,name:'Kedelai Lokal Non-GMO',foto:'🫘',cat:'Palawija',unit:'kg',hK:12000,hP:8500, stok:3400, loc:'Grobogan, Jawa Tengah',   petani:'KUD Harapan Tani',  pId:null,trend:'up',  ch:3.8, hist:[10500,10800,11000,11200,11600,12000],rating:4.9,sold:1240,cert:['Organik','Non-GMO'],desc:'Kedelai lokal Grobogan, biji besar, kadar protein tinggi. Ideal untuk tempe dan tahu berkualitas.'},
+  {id:4,name:'Cabai Merah Keriting', foto:'🌶️',cat:'Sayuran', unit:'kg',hK:38000,hP:18000,stok:820,  loc:'Solok, Sumatera Barat',  petani:'Kelompok Tani Maju',pId:null,trend:'up',  ch:12.5,hist:[24000,26000,29000,33000,36000,38000],rating:4.7,sold:320,cert:[],             desc:'Cabai keriting segar langsung dari petani Solok. Pedas alami, stok terbatas musim ini.'},
+  {id:5,name:'Bawang Merah Brebes',  foto:'🧅',cat:'Sayuran', unit:'kg',hK:28000,hP:14000,stok:4200, loc:'Brebes, Jawa Tengah',     petani:'KUD Bawang Mas',    pId:null,trend:'stable',ch:0.4,hist:[27000,27200,27500,28000,27800,28000],rating:4.5,sold:1820,cert:['SNI'],       desc:'Bawang merah Brebes asli, aroma kuat, tahan lama. Favorit pedagang pasar se-Pulau Jawa.'},
+  {id:6,name:'Singkong Segar',       foto:'🥔',cat:'Umbi',    unit:'kg',hK:3200, hP:900,  stok:22000,loc:'Lampung Tengah, Lampung', petani:'BUMDes Tunas Baru', pId:null,trend:'down',ch:2.2, hist:[3500,3400,3350,3300,3250,3200],    rating:4.3,sold:8900,cert:[],             desc:'Singkong segar Lampung, pati tinggi, cocok untuk tapioka, keripik, dan olahan industri.'},
+];
+const CATS = ['Semua','Padi','Palawija','Sayuran','Umbi'];
+
+const REGIONS = [
+  {id:1,name:'Jawa Barat',        status:'surplus', commod:['Beras','Sayuran'],          vol:12500},
+  {id:2,name:'Jawa Timur',        status:'surplus', commod:['Jagung','Kedelai','Gula'],   vol:18200},
+  {id:3,name:'Sulawesi Selatan',  status:'surplus', commod:['Beras','Jagung','Kakao'],    vol:7600},
+  {id:4,name:'Sumatera Selatan',  status:'surplus', commod:['Beras','Sawit'],             vol:9800},
+  {id:5,name:'Jawa Tengah',       status:'seimbang',commod:['Beras','Bawang'],            vol:0},
+  {id:6,name:'NTT',               status:'defisit', commod:['Beras','Jagung'],            vol:8200},
+  {id:7,name:'Papua',             status:'defisit', commod:['Beras','Kedelai'],           vol:5400},
+  {id:8,name:'Kalimantan Tengah', status:'defisit', commod:['Sayuran','Buah'],            vol:3100},
+];
+const MATCHES = [
+  {id:1,dari:'Jawa Barat',     ke:'NTT',    kom:'Beras Premium', vol:500,sat:'ton',harga:11000,status:'menunggu',nilai:125000000,eta:'3–4 hari',tgl:'29 Jan 2026'},
+  {id:2,dari:'Jawa Timur',     ke:'Papua',  kom:'Jagung Pipil',  vol:300,sat:'ton',harga:4500, status:'diproses', nilai:42000000, eta:'5–7 hari',tgl:'27 Jan 2026'},
+  {id:3,dari:'Jawa Timur',     ke:'Kalteng',kom:'Kedelai Lokal', vol:200,sat:'ton',harga:9000, status:'selesai',  nilai:56000000, eta:'Sudah tiba',tgl:'22 Jan 2026'},
+  {id:4,dari:'Sulawesi Selatan',ke:'Papua', kom:'Beras Medium',  vol:400,sat:'ton',harga:10500,status:'menunggu',nilai:98000000, eta:'6–8 hari',tgl:'29 Jan 2026'},
+];
+const FINANCING = [
+  {id:1,icon:'🌾',nama:'KUR Tani Cepat',    prov:'Bank BRI via Koperasi', bunga:6,  tenor:12,maks:50000000,min:5000000, cair:'3–5 hari kerja',syarat:'Anggota koperasi aktif min. 6 bulan',tags:['Bunga 6%/tahun','Jaminan fleksibel','Didukung OJK']},
+  {id:2,icon:'💰',nama:'Modal Panen Cepat', prov:'Fintech Mitra OJK',     bunga:8,  tenor:6, maks:25000000,min:1000000, cair:'1–2 hari kerja',syarat:'Rekam jejak penjualan PanenHub min. 3 bulan',tags:['Tanpa agunan','Pencairan cepat','Berbasis data']},
+  {id:3,icon:'🌱',nama:'Kredit Saprotan',   prov:'Koperasi Internal',     bunga:4,  tenor:4, maks:10000000,min:500000,  cair:'Langsung cair', syarat:'Anggota koperasi aktif, khusus pupuk & bibit',tags:['Bunga 4%/tahun','Langsung cair','Cicil dari panen']},
+];
+const LOGISTIK = [
+  {id:1,no:'PNH-2401-0812',kom:'Beras Premium IR64 500 kg',    dari:'Karawang, Jabar',ke:'Jakarta Pusat',status:'dalam_perjalanan',prog:65, eta:'Hari ini, 14.00 WIB',  driver:'Pak Rohmat S.',plat:'B 3841 FX',harga:350000},
+  {id:2,no:'PNH-2401-0811',kom:'Jagung Pipil Kuning 2.000 kg', dari:'Kediri, Jatim',  ke:'Surabaya',     status:'selesai',           prog:100,eta:'Kemarin, 09.30 WIB', driver:'Pak Sugeng',   plat:'L 1234 AB',harga:420000},
+  {id:3,no:'PNH-2401-0813',kom:'Cabai Keriting Segar 300 kg',  dari:'Solok, Sumbar',  ke:'Padang',       status:'menunggu_pickup',   prog:10, eta:'Besok, 08.00 WIB',    driver:'Mencari driver',plat:'—',        harga:180000},
+];
+const NOTIFS = [
+  {id:1,type:'logistik',text:'Pesanan Beras 500kg dari Bu Sari sedang dalam perjalanan',time:'10 mnt lalu',read:false},
+  {id:2,type:'harga',   text:'Harga Cabai Keriting naik 12.5% hari ini — stok terbatas',time:'1 jam lalu', read:false},
+  {id:3,type:'finance', text:'Pengajuan KUR Tani Cepat Rp 15jt disetujui oleh Bank BRI',time:'2 jam lalu', read:true},
+  {id:4,type:'match',   text:'PanenMatch: Kedelai 200 ton Jatim ke Kalteng selesai',   time:'Kemarin',    read:true},
+];
+
+/* ══════════════════════════════════════
+   UTILS
+══════════════════════════════════════ */
+const fmt   = n => new Intl.NumberFormat('id-ID').format(n);
+const fmtRp = n => 'Rp ' + fmt(n);
+const fmtK  = n => n >= 1e9 ? (n/1e9).toFixed(1)+'M' : n >= 1e6 ? (n/1e6).toFixed(1)+'jt' : n >= 1e3 ? (n/1e3).toFixed(0)+'rb' : String(n);
+const escHtml = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+function sparklineSVG(hist,up,w=72,h=32){
+  const mn=Math.min(...hist),mx=Math.max(...hist),r=mx-mn||1;
+  const pts=hist.map((v,i)=>`${(i/(hist.length-1))*w},${h-((v-mn)/r)*(h-6)-3}`).join(' ');
+  const col=up===true?'#dc2626':up===false?'#16a34a':'#d97706';
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="overflow:visible"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+function bigChartSVG(hist,trend,W=260,H=52){
+  const mn=Math.min(...hist),mx=Math.max(...hist),r=mx-mn||1;
+  const pts=hist.map((v,i)=>`${(i/(hist.length-1))*W},${H-((v-mn)/r)*(H-8)-4}`).join(' ');
+  const col=trend==='up'?'#dc2626':trend==='down'?'#16a34a':'#d97706';
+  const bg=trend==='up'?'#fef2f2':trend==='down'?'#f0fdf4':'#fef3c7';
+  const dots=hist.map((v,i)=>{const x=(i/(hist.length-1))*W,y=H-((v-mn)/r)*(H-8)-4;return `<circle cx="${x}" cy="${y}" r="4" fill="${col}"/><circle cx="${x}" cy="${y}" r="2" fill="white"/>`;}).join('');
+  return `<svg width="100%" viewBox="0 0 ${W} ${H+4}" style="overflow:visible"><polygon points="0,${H+4} ${pts} ${W},${H+4}" fill="${bg}"/><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>${dots}</svg>`;
+}
+function trendLabel(c){
+  const sign=c.trend==='up'?'↑ +':c.trend==='down'?'↓ −':'→ ';
+  const col=c.trend==='up'?'text-red-500':c.trend==='down'?'text-green-600':'text-stone-400';
+  return `<span class="${col} text-xs font-bold">${sign}${c.ch}%</span>`;
+}
+function statusBadge(s){
+  const map={surplus:['Surplus','bg-green-100 text-green-700'],defisit:['Defisit','bg-red-100 text-red-700'],seimbang:['Seimbang','bg-amber-100 text-amber-700'],menunggu:['Menunggu','bg-amber-100 text-amber-700'],diproses:['Diproses','bg-blue-100 text-blue-700'],selesai:['Selesai','bg-green-100 text-green-700'],dalam_perjalanan:['Dalam Perjalanan','bg-blue-100 text-blue-700'],menunggu_pickup:['Menunggu Pickup','bg-amber-100 text-amber-700']};
+  const[l,c]=map[s]||['—','bg-stone-100 text-stone-500'];
+  return `<span class="${c} text-[10px] font-semibold px-2 py-0.5 rounded-full">${l}</span>`;
+}
+function badge(label,col='green'){
+  const c={green:'bg-green-100 text-green-700',blue:'bg-blue-100 text-blue-700',amber:'bg-amber-100 text-amber-700',red:'bg-red-100 text-red-700',gray:'bg-stone-100 text-stone-500'}[col]||'bg-stone-100 text-stone-500';
+  return `<span class="${c} text-[10px] font-semibold px-2 py-0.5 rounded-full">${escHtml(label)}</span>`;
+}
+function avatar(init,size='md',col='green'){
+  const s={sm:'w-8 h-8 text-xs',md:'w-10 h-10 text-sm',lg:'w-14 h-14 text-xl'}[size];
+  const c={green:'bg-green-700',amber:'bg-amber-500',blue:'bg-blue-600',purple:'bg-purple-600'}[col]||'bg-green-700';
+  return `<div class="${s} ${c} text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">${escHtml(init)}</div>`;
+}
+function progressBar(prog,s){
+  const col=s==='selesai'?'bg-green-500':s==='dalam_perjalanan'?'bg-blue-500':'bg-amber-400';
+  return `<div class="bg-stone-100 rounded-full h-2 overflow-hidden"><div class="${col} h-full progress rounded-full" style="width:${prog}%"></div></div>`;
+}
+const SVG_ARR = `<svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 text-stone-300" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`;
+const SVG_BACK= `<svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>`;
+
+/* ══════════════════════════════════════
+   STATE
+══════════════════════════════════════ */
+const state = {
+  user: null,
+  tab: 'beranda',
+  notifOpen: false,
+  pasarQ: '',
+  pasarCat: 'Semua',
+  pasarSel: null,
+  hargaSel: 0,
+  matchTab: 'peta',
+  akunTab: 'finance',
+};
+function setState(patch){ Object.assign(state,patch); render(); }
+
+/* ══════════════════════════════════════
+   BOTTOM NAV
+══════════════════════════════════════ */
+function renderBottomNav(){
+  const tabs=[
+    {id:'beranda',label:'Beranda', svg:`<svg viewBox="0 0 24 24" fill="none" class="w-5 h-5" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>`},
+    {id:'pasar',  label:'Pasar',   svg:`<svg viewBox="0 0 24 24" fill="none" class="w-5 h-5" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>`},
+    {id:'harga',  label:'Harga',   svg:`<svg viewBox="0 0 24 24" fill="none" class="w-5 h-5" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`},
+    {id:'match',  label:'Match',   svg:`<svg viewBox="0 0 24 24" fill="none" class="w-5 h-5" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>`},
+    {id:'akun',   label:'Akun',    svg:`<svg viewBox="0 0 24 24" fill="none" class="w-5 h-5" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`},
+  ];
+  const unread=NOTIFS.filter(n=>!n.read).length;
+  return `<nav class="bottom-nav">${tabs.map(t=>{
+    const active=state.tab===t.id;
+    const col=active?'text-green-700':'text-stone-400';
+    const dot=t.id==='beranda'&&unread>0?`<span style="position:absolute;top:-4px;right:-6px;width:14px;height:14px;background:#ef4444;border-radius:50%;color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:700">${unread}</span>`:'';
+    return `<button class="${col} flex flex-col items-center justify-center flex-1 py-2.5 gap-0.5" data-nav="${t.id}">
+      <div style="position:relative">${t.svg}${dot}</div>
+      <span class="text-[10px] font-semibold">${t.label}</span>
+    </button>`;
+  }).join('')}</nav>`;
+}
+
+/* ══════════════════════════════════════
+   SCREEN: LOGIN
+══════════════════════════════════════ */
+function renderLogin(){
+  const roles=[
+    {role:'petani',    e:'👨‍🌾',label:'Petani',            desc:'Jual hasil panen, akses modal & harga real-time',border:'border-green-500', bg:'bg-green-50', tc:'text-green-800'},
+    {role:'pembeli',   e:'🛍️', label:'Pembeli',            desc:'Beli langsung dari petani, harga transparan',      border:'border-blue-400',  bg:'bg-blue-50',  tc:'text-blue-800'},
+    {role:'koperasi',  e:'🏛️', label:'Koperasi / BUMDes', desc:'Kelola distribusi antar wilayah & pantau anggota', border:'border-amber-500', bg:'bg-amber-50', tc:'text-amber-800'},
+    {role:'pemerintah',e:'📋', label:'Pemerintah',         desc:'Pantau stok, harga & distribusi pangan daerah',   border:'border-purple-400',bg:'bg-purple-50',tc:'text-purple-800'},
+  ];
+  return `<div class="min-h-screen flex flex-col">
+    <div class="gh px-6 pt-16 pb-10">
+      <div class="text-green-300 text-sm mb-1">Selamat datang di</div>
+      <div class="text-white font-extrabold text-3xl tracking-tight mb-2">PanenHub 🌾</div>
+      <div class="text-green-300 text-sm leading-relaxed">Platform digital ketahanan pangan<br>berbasis koperasi & BUMDes Indonesia</div>
+    </div>
+    <div class="flex-1 bg-stone-50 px-4 pt-6 pb-8">
+      <div class="text-[11px] text-stone-400 font-bold uppercase tracking-widest mb-3">Masuk sebagai</div>
+      <div class="flex flex-col gap-3">
+        ${roles.map((r,i)=>`
+        <button class="fu d${i+1} ${r.bg} border ${r.border} rounded-2xl p-4 flex items-center gap-4 text-left tap" data-login="${r.role}">
+          <span class="text-4xl leading-none">${r.e}</span>
+          <div class="flex-1">
+            <div class="font-bold text-sm ${r.tc}">${r.label}</div>
+            <div class="text-stone-500 text-xs mt-0.5 leading-relaxed">${r.desc}</div>
+          </div>
+          <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 text-stone-300 flex-shrink-0" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>`).join('')}
+      </div>
+      <div class="text-center text-stone-400 text-[11px] mt-8">Demo prototype · Data tertanam untuk simulasi</div>
+    </div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════
+   SCREEN: BERANDA
+══════════════════════════════════════ */
+function renderBeranda(){
+  const u=state.user;
+  const isP=u.role==='petani',isB=u.role==='pembeli',isK=u.role==='koperasi',isG=u.role==='pemerintah';
+  const unread=NOTIFS.filter(n=>!n.read).length;
+
+  // Wallet card
+  let walletCard='';
+  if(isP||isB) walletCard=`
+    <div class="bg-white/15 rounded-2xl p-4">
+      <div class="text-green-200 text-xs mb-0.5">Saldo Wallet</div>
+      <div class="text-white text-2xl font-extrabold">${fmtRp(u.saldo)}</div>
+      <div class="flex gap-2 mt-3">
+        <button class="flex-1 bg-white text-green-700 text-xs font-bold py-2 rounded-xl">Tarik Dana</button>
+        <button class="flex-1 bg-white/20 text-white text-xs font-bold py-2 rounded-xl">Top Up</button>
+        <button class="flex-1 bg-white/20 text-white text-xs font-bold py-2 rounded-xl">Riwayat</button>
+      </div>
+    </div>`;
+  if(isK) walletCard=`
+    <div class="bg-white/15 rounded-2xl p-4">
+      <div class="text-green-200 text-xs mb-0.5">Modal Kerja Koperasi</div>
+      <div class="text-white text-2xl font-extrabold">${fmtRp(u.modal)}</div>
+      <div class="grid grid-cols-3 gap-2 mt-3">
+        ${[{v:u.anggota,l:'Anggota'},{v:u.matchAktif,l:'Match Aktif'},{v:fmtK(u.distribusi),l:'Distribusi/bln'}].map(x=>`
+        <div class="bg-white/20 rounded-xl p-2 text-center">
+          <div class="text-white font-extrabold text-sm">${x.v}</div>
+          <div class="text-green-200 text-[10px]">${x.l}</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  if(isG){
+    const s=REGIONS.filter(r=>r.status==='surplus').length,e=REGIONS.filter(r=>r.status==='seimbang').length,d=REGIONS.filter(r=>r.status==='defisit').length;
+    walletCard=`
+    <div class="bg-white/15 rounded-2xl p-4">
+      <div class="text-green-200 text-xs mb-2">Status Ketahanan Pangan — ${u.wilayah} Wilayah</div>
+      <div class="grid grid-cols-3 gap-2">
+        <div class="bg-green-500/30 rounded-xl p-2 text-center"><div class="text-white font-extrabold">${s}</div><div class="text-green-200 text-[10px]">Surplus</div></div>
+        <div class="bg-amber-400/30 rounded-xl p-2 text-center"><div class="text-white font-extrabold">${e}</div><div class="text-amber-200 text-[10px]">Seimbang</div></div>
+        <div class="bg-red-500/30 rounded-xl p-2 text-center"><div class="text-white font-extrabold">${d}</div><div class="text-red-200 text-[10px]">Defisit</div></div>
+      </div>
+    </div>`;
+  }
+
+  // Role-specific sections
+  let extra='';
+  if(isP){
+    const myProds=COMMODITIES.filter(c=>c.pId===1);
+    extra=`<div class="mb-5">
+      <div class="flex items-center justify-between mb-2">
+        <div class="font-bold text-stone-800 text-sm">Produk Saya</div>
+        <button class="text-green-700 text-xs font-semibold">+ Tambah Produk</button>
+      </div>
+      ${myProds.map(c=>`
+      <div class="bg-white rounded-2xl p-3 shadow-card mb-2 flex items-center gap-3 tap" data-open-prod="${c.id}">
+        <span class="text-3xl">${c.foto}</span>
+        <div class="flex-1 min-w-0">
+          <div class="font-bold text-sm text-stone-800 truncate">${escHtml(c.name)}</div>
+          <div class="text-xs text-stone-400">Stok: ${fmt(c.stok)} kg · Terjual: ${fmt(c.sold)}</div>
+        </div>
+        <div class="text-right flex-shrink-0">
+          <div class="text-green-700 font-extrabold text-sm">${fmtK(c.hP)}/kg</div>
+          ${sparklineSVG(c.hist,c.trend==='up',56,22)}
+        </div>
+      </div>`).join('')}
+    </div>`;
+  }
+  if(isB){
+    const active=LOGISTIK.filter(l=>l.status!=='selesai');
+    extra=`<div class="mb-5">
+      <div class="flex items-center justify-between mb-2">
+        <div class="font-bold text-stone-800 text-sm">Pesanan Aktif (${active.length})</div>
+        <button class="text-green-700 text-xs font-semibold">Semua →</button>
+      </div>
+      ${active.map(l=>`
+      <div class="bg-white rounded-2xl p-3 shadow-card mb-2">
+        <div class="flex items-center justify-between mb-1">
+          <div class="font-bold text-stone-800 text-sm">${escHtml(l.kom.split(' ').slice(0,3).join(' '))}</div>
+          ${statusBadge(l.status)}
+        </div>
+        <div class="text-xs text-stone-400 mb-2">${escHtml(l.dari)} → ${escHtml(l.ke)}</div>
+        ${progressBar(l.prog,l.status)}
+        <div class="text-[10px] text-stone-400 mt-1">Estimasi: ${l.eta}</div>
+      </div>`).join('')}
+    </div>`;
+  }
+  if(isK||isG){
+    extra=`<div class="mb-5">
+      <div class="flex items-center justify-between mb-2">
+        <div class="font-bold text-stone-800 text-sm">PanenMatch Terbaru</div>
+        <button class="text-green-700 text-xs font-semibold" data-nav="match">Semua →</button>
+      </div>
+      ${MATCHES.slice(0,3).map(m=>`
+      <div class="bg-white rounded-2xl p-3 shadow-card mb-2">
+        <div class="flex items-center justify-between mb-1">
+          <div class="font-bold text-sm text-stone-800">${escHtml(m.kom)} · ${m.vol} ${m.sat}</div>
+          ${statusBadge(m.status)}
+        </div>
+        <div class="text-xs text-stone-500">${escHtml(m.dari)} → ${escHtml(m.ke)} · ${m.eta}</div>
+      </div>`).join('')}
+    </div>`;
+  }
+
+  const notifOverlay = state.notifOpen ? `
+    <div class="notif-overlay" id="notif-overlay">
+      <div class="notif-box">
+        <div class="px-4 py-3 border-b border-stone-100 flex items-center justify-between">
+          <div class="font-bold text-stone-800">Notifikasi</div>
+          <span class="text-xs text-green-700 font-semibold">${unread} belum dibaca</span>
+        </div>
+        ${NOTIFS.map(n=>`
+        <div class="flex gap-3 px-4 py-3 border-b border-stone-50 last:border-0 ${n.read?'opacity-50':''}">
+          <div class="w-2 h-2 rounded-full mt-2 flex-shrink-0 ${n.read?'bg-stone-300':'bg-green-500'}"></div>
+          <div class="flex-1">
+            <div class="text-xs text-stone-700 leading-relaxed">${escHtml(n.text)}</div>
+            <div class="text-[10px] text-stone-400 mt-0.5">${n.time}</div>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>` : '';
+
+  return `
+  <div style="position:relative">
+    <div class="gh px-4 pt-12 pb-6">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <div class="text-green-300 text-xs">Selamat pagi 👋</div>
+          <div class="text-white font-extrabold text-xl leading-tight mt-0.5">${escHtml(u.name)}</div>
+          <div class="text-green-300 text-xs mt-0.5">${ROLE_LABEL[u.role]} · ${escHtml(u.loc)}</div>
+        </div>
+        <div class="flex items-center gap-2 mt-1">
+          <button id="notif-btn" class="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center text-white" style="position:relative">
+            <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+            ${unread>0?`<span style="position:absolute;top:-2px;right:-2px;width:16px;height:16px;background:#ef4444;border-radius:50%;color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:700">${unread}</span>`:''}
+          </button>
+          ${avatar(u.init,'sm')}
+        </div>
+      </div>
+      ${walletCard}
+    </div>
+    ${notifOverlay}
+    <div class="px-4 pt-4">
+      <div class="grid grid-cols-4 gap-2 mb-5">
+        ${[{e:'🛒',l:'Pasar',t:'pasar'},{e:'📊',l:'Harga',t:'harga'},{e:'🔄',l:'Match',t:'match'},{e:'💼',l:'Akun',t:'akun'}].map(a=>`
+        <button class="flex flex-col items-center gap-1 bg-white rounded-2xl py-3 shadow-card tap" data-nav="${a.t}">
+          <span class="text-2xl leading-none">${a.e}</span>
+          <span class="text-[10px] text-stone-600 font-semibold">${a.l}</span>
+        </button>`).join('')}
+      </div>
+      <div class="mb-5">
+        <div class="flex items-center justify-between mb-2">
+          <div class="font-bold text-stone-800 text-sm">Harga Hari Ini</div>
+          <button class="text-green-700 text-xs font-semibold" data-nav="harga">Lihat semua →</button>
+        </div>
+        <div class="scroll-x flex gap-3 pb-1 -mx-1 px-1">
+          ${COMMODITIES.slice(0,5).map(c=>`
+          <div class="flex-shrink-0 bg-white rounded-2xl p-3 shadow-card tap" style="width:108px" data-nav="harga">
+            <div class="text-2xl mb-1">${c.foto}</div>
+            <div class="text-[11px] font-bold text-stone-700 leading-tight mb-1">${c.name.split(' ').slice(0,2).join(' ')}</div>
+            <div class="text-green-700 font-extrabold text-sm">${fmtK(c.hK)}</div>
+            <div class="mt-0.5">${trendLabel(c)}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+      ${extra}
+    </div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════
+   SCREEN: PASAR
+══════════════════════════════════════ */
+function renderPasar(){
+  const u=state.user;
+  if(state.pasarSel!==null){
+    const c=COMMODITIES.find(x=>x.id===state.pasarSel);
+    const margin=Math.round((c.hK-c.hP)/c.hK*100);
+    return `
+    <div>
+      <div class="gh px-4 pt-12 pb-5">
+        <button class="text-green-200 text-sm flex items-center gap-1 mb-3" id="pasar-back">${SVG_BACK} Kembali</button>
+        <div class="flex items-start gap-4">
+          <span class="text-5xl">${c.foto}</span>
+          <div>
+            <div class="text-white font-extrabold text-lg leading-tight">${escHtml(c.name)}</div>
+            <div class="text-green-300 text-xs mt-1">${escHtml(c.petani)}</div>
+            <div class="text-green-200 text-xs mt-0.5">📍 ${escHtml(c.loc)}</div>
+          </div>
+        </div>
+      </div>
+      <div class="px-4 py-4">
+        <div class="bg-white rounded-2xl p-4 shadow-card mb-3">
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div><div class="text-[10px] text-stone-400 mb-0.5">Harga Konsumen</div><div class="text-green-700 text-xl font-extrabold">${fmtRp(c.hK)}<span class="text-xs font-normal text-stone-400">/${c.unit}</span></div></div>
+            <div class="text-right"><div class="text-[10px] text-stone-400 mb-0.5">Harga Petani</div><div class="text-amber-600 font-bold text-base">${fmtRp(c.hP)}/${c.unit}</div></div>
+          </div>
+          <div class="bg-red-50 border border-red-100 rounded-xl p-3 mb-4">
+            <div class="text-xs font-bold text-red-700 mb-1.5">Margin Rantai Distribusi</div>
+            <div class="flex items-center gap-2 mb-1">
+              <div class="flex-1 bg-red-100 rounded-full h-2 overflow-hidden"><div class="h-full bg-red-500" style="width:${margin}%"></div></div>
+              <span class="text-red-700 font-extrabold text-sm flex-shrink-0">${margin}%</span>
+            </div>
+            <div class="text-[10px] text-red-400">Selisih ${fmtRp(c.hK-c.hP)}/${c.unit} diserap rantai distribusi</div>
+          </div>
+          <div class="text-[10px] text-stone-400 mb-1">Tren harga 6 bulan terakhir</div>
+          ${bigChartSVG(c.hist,c.trend)}
+        </div>
+        <div class="bg-white rounded-2xl p-4 shadow-card mb-3">
+          <div class="font-bold text-stone-800 text-sm mb-2">Detail Produk</div>
+          <div class="text-xs text-stone-500 leading-relaxed mb-3">${escHtml(c.desc)}</div>
+          <div class="grid grid-cols-2 gap-2">
+            ${[['Stok tersedia',fmt(c.stok)+' kg'],['Total terjual',fmt(c.sold)+' kg'],['Rating','⭐ '+c.rating],['Kategori',c.cat]].map(([k,v])=>`
+            <div class="bg-stone-50 rounded-xl p-2.5"><div class="text-[10px] text-stone-400">${k}</div><div class="font-bold text-stone-700 text-sm mt-0.5">${v}</div></div>`).join('')}
+          </div>
+          ${c.cert.length?`<div class="flex gap-1 mt-3 flex-wrap">${c.cert.map(s=>badge(s,'green')).join('')}</div>`:''}
+        </div>
+        ${u.role!=='petani'?`<button class="w-full bg-green-700 text-white font-extrabold py-4 rounded-2xl text-sm">🛒 Pesan Sekarang</button>`:''}
+        ${u.role==='petani'&&c.pId===1?`<button class="w-full border-2 border-green-700 text-green-700 font-extrabold py-4 rounded-2xl text-sm">✏️ Edit Produk</button>`:''}
+      </div>
+    </div>`;
+  }
+
+  const list=COMMODITIES.filter(c=>{
+    const mq=!state.pasarQ||c.name.toLowerCase().includes(state.pasarQ.toLowerCase())||c.loc.toLowerCase().includes(state.pasarQ.toLowerCase());
+    const mc=state.pasarCat==='Semua'||c.cat===state.pasarCat;
+    return mq&&mc;
+  });
+
+  return `
+  <div>
+    <div class="gh px-4 pt-12 pb-4">
+      <div class="text-white font-extrabold text-xl mb-3">PetaniMart 🛒</div>
+      <div class="bg-white/15 rounded-xl flex items-center gap-2 px-3 py-2.5">
+        <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 text-green-200 flex-shrink-0" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="pasar-q" value="${escHtml(state.pasarQ)}" placeholder="Cari komoditas atau daerah asal..." class="bg-transparent text-white placeholder-green-300 text-sm flex-1 outline-none"/>
+        ${state.pasarQ?`<button id="pasar-clear" class="text-green-300 text-xl leading-none">×</button>`:''}
+      </div>
+    </div>
+    <div class="px-4 pt-3">
+      <div class="scroll-x flex gap-2 pb-2 mb-3 -mx-1 px-1">
+        ${CATS.map(c=>`<button class="flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all tap ${state.pasarCat===c?'bg-green-700 text-white':'bg-white text-stone-500 shadow-card'}" data-cat="${c}">${c}</button>`).join('')}
+      </div>
+      <div class="text-xs text-stone-400 mb-3">${list.length} produk tersedia</div>
+      <div class="grid grid-cols-2 gap-3">
+        ${list.map(c=>`
+        <button class="bg-white rounded-2xl p-3 shadow-card tap text-left" data-open-prod="${c.id}">
+          <div class="text-3xl mb-2">${c.foto}</div>
+          <div class="text-xs font-bold text-stone-800 leading-tight mb-1">${escHtml(c.name)}</div>
+          <div class="text-[10px] text-stone-400 mb-2 truncate">${escHtml(c.loc)}</div>
+          <div class="flex items-end justify-between">
+            <div><div class="text-green-700 font-extrabold text-sm">${fmtK(c.hK)}</div><div class="text-stone-400 text-[10px]">/${c.unit}</div></div>
+            <div class="text-right">${sparklineSVG(c.hist,c.trend==='up',52,26)}<div class="mt-0.5">${trendLabel(c)}</div></div>
+          </div>
+          ${c.cert.length?`<div class="mt-2">${badge(c.cert[0],'green')}</div>`:''}
+        </button>`).join('')}
+      </div>
+      ${!list.length?`<div class="text-center py-16 text-stone-400"><div class="text-4xl mb-2">🔍</div><div class="text-sm">Produk tidak ditemukan</div></div>`:''}
+    </div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════
+   SCREEN: HARGA
+══════════════════════════════════════ */
+function renderHarga(){
+  const c=COMMODITIES[state.hargaSel];
+  const margin=Math.round((c.hK-c.hP)/c.hK*100);
+  return `
+  <div>
+    <div class="gh px-4 pt-12 pb-5">
+      <div class="text-white font-extrabold text-xl">HargaWatch 📊</div>
+      <div class="text-green-300 text-xs mt-0.5">Transparansi harga pangan real-time</div>
+    </div>
+    <div class="px-4 pt-4">
+      <div class="bg-white rounded-2xl p-4 shadow-card mb-4">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="text-4xl">${c.foto}</span>
+          <div class="flex-1">
+            <div class="font-extrabold text-stone-800">${escHtml(c.name)}</div>
+            <div class="text-xs text-stone-400 mt-0.5">${escHtml(c.loc)}</div>
+          </div>
+          ${trendLabel(c)}
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <div class="bg-green-50 rounded-2xl p-3">
+            <div class="text-[10px] text-green-600 font-semibold mb-0.5">Harga Konsumen</div>
+            <div class="text-green-700 font-extrabold text-xl">${fmtRp(c.hK)}</div>
+            <div class="text-[10px] text-green-500">per ${c.unit}</div>
+          </div>
+          <div class="bg-amber-50 rounded-2xl p-3">
+            <div class="text-[10px] text-amber-600 font-semibold mb-0.5">Harga Petani</div>
+            <div class="text-amber-600 font-extrabold text-xl">${fmtRp(c.hP)}</div>
+            <div class="text-[10px] text-amber-400">per ${c.unit}</div>
+          </div>
+        </div>
+        <div class="bg-red-50 rounded-xl p-3 mb-4">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-xs font-bold text-red-700">Margin Rantai Distribusi</span>
+            <span class="text-red-700 font-extrabold text-sm">${margin}%</span>
+          </div>
+          <div class="bg-red-100 rounded-full h-2 overflow-hidden"><div class="h-full bg-red-500" style="width:${margin}%"></div></div>
+          <div class="text-[10px] text-red-400 mt-1.5">Selisih ${fmtRp(c.hK-c.hP)}/${c.unit} diserap distribusi</div>
+        </div>
+        <div class="text-[10px] text-stone-400 mb-1.5">Tren 6 bulan terakhir</div>
+        ${bigChartSVG(c.hist,c.trend,280,52)}
+      </div>
+      <div class="text-sm font-bold text-stone-800 mb-2">Semua Komoditas</div>
+      ${COMMODITIES.map((x,i)=>`
+      <button class="w-full flex items-center gap-3 p-3 rounded-2xl mb-2 tap text-left ${state.hargaSel===i?'bg-green-50 border border-green-200':'bg-white shadow-card'}" data-harga-sel="${i}">
+        <span class="text-2xl">${x.foto}</span>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-bold text-stone-800">${escHtml(x.name)}</div>
+          <div class="text-[11px] text-stone-400 truncate">${escHtml(x.loc)}</div>
+        </div>
+        <div class="text-right flex-shrink-0">
+          <div class="text-green-700 font-extrabold text-sm">${fmtRp(x.hK)}</div>
+          ${trendLabel(x)}
+        </div>
+        ${sparklineSVG(x.hist,x.trend==='up',56,30)}
+      </button>`).join('')}
+    </div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════
+   SCREEN: MATCH
+══════════════════════════════════════ */
+function renderMatch(){
+  const u=state.user;
+  const surplus=REGIONS.filter(r=>r.status==='surplus');
+  const defisit=REGIONS.filter(r=>r.status==='defisit');
+  const seimbang=REGIONS.filter(r=>r.status==='seimbang');
+  const canCreate=u.role==='koperasi'||u.role==='pemerintah';
+  const tab=state.matchTab;
+  return `
+  <div>
+    <div class="gh px-4 pt-12 pb-5">
+      <div class="text-white font-extrabold text-xl">PanenMatch 🔄</div>
+      <div class="text-green-300 text-xs mt-0.5">Pencocokan surplus & defisit pangan antar wilayah</div>
+    </div>
+    <div class="flex bg-white border-b border-stone-100">
+      <button class="flex-1 py-3 text-xs font-bold ${tab==='peta'?'text-green-700 border-b-2 border-green-700':'text-stone-400'}" data-match-tab="peta">Peta Wilayah</button>
+      <button class="flex-1 py-3 text-xs font-bold ${tab==='transaksi'?'text-green-700 border-b-2 border-green-700':'text-stone-400'}" data-match-tab="transaksi">Transaksi</button>
+    </div>
+    <div class="px-4 pt-4">
+      ${tab==='peta'?`
+      <div class="grid grid-cols-3 gap-2 mb-5">
+        <div class="bg-green-50 border border-green-200 rounded-2xl p-3 text-center">
+          <div class="text-green-700 font-extrabold text-2xl">${surplus.length}</div>
+          <div class="text-green-600 text-[11px] font-semibold">Surplus</div>
+          <div class="text-green-400 text-[10px] mt-0.5">${fmtK(surplus.reduce((a,r)=>a+r.vol,0))} ton</div>
+        </div>
+        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-center">
+          <div class="text-amber-600 font-extrabold text-2xl">${seimbang.length}</div>
+          <div class="text-amber-600 text-[11px] font-semibold">Seimbang</div>
+          <div class="text-amber-400 text-[10px] mt-0.5">stabil</div>
+        </div>
+        <div class="bg-red-50 border border-red-200 rounded-2xl p-3 text-center">
+          <div class="text-red-600 font-extrabold text-2xl">${defisit.length}</div>
+          <div class="text-red-600 text-[11px] font-semibold">Defisit</div>
+          <div class="text-red-400 text-[10px] mt-0.5">${fmtK(defisit.reduce((a,r)=>a+r.vol,0))} ton</div>
+        </div>
+      </div>
+      <div class="text-sm font-bold text-stone-800 mb-2">Wilayah Surplus ✅</div>
+      ${surplus.map(r=>`
+      <div class="bg-white rounded-2xl p-3 shadow-card mb-2 flex items-center gap-3">
+        <div class="w-2.5 h-2.5 bg-green-500 rounded-full pls flex-shrink-0"></div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-bold text-stone-800">${escHtml(r.name)}</div>
+          <div class="text-[11px] text-stone-400 truncate">${r.commod.join(', ')}</div>
+        </div>
+        <div class="text-right flex-shrink-0">
+          <div class="text-green-700 font-extrabold text-sm">${fmt(r.vol)}</div>
+          <div class="text-[10px] text-stone-400">ton surplus</div>
+        </div>
+      </div>`).join('')}
+      <div class="text-sm font-bold text-stone-800 mt-4 mb-2">Wilayah Defisit ⚠️</div>
+      ${defisit.map(r=>`
+      <div class="bg-white rounded-2xl p-3 shadow-card mb-2 flex items-center gap-3">
+        <div class="w-2.5 h-2.5 bg-red-500 rounded-full flex-shrink-0"></div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-bold text-stone-800">${escHtml(r.name)}</div>
+          <div class="text-[11px] text-stone-400 truncate">${r.commod.join(', ')}</div>
+        </div>
+        <div class="text-right flex-shrink-0">
+          <div class="text-red-600 font-extrabold text-sm">${fmt(r.vol)}</div>
+          <div class="text-[10px] text-stone-400">ton butuh</div>
+        </div>
+      </div>`).join('')}
+      ${canCreate?`<button class="w-full bg-green-700 text-white font-extrabold py-4 rounded-2xl text-sm mt-4">+ Buat Rekomendasi Match Baru</button>`:''}
+      `:/* TRANSAKSI */`
+      <div class="text-xs text-stone-400 mb-3">${MATCHES.length} transaksi · Diurutkan terbaru</div>
+      ${MATCHES.map(m=>`
+      <div class="bg-white rounded-2xl p-4 shadow-card mb-3">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <div class="font-extrabold text-stone-800 text-sm">${escHtml(m.kom)}</div>
+            <div class="text-[11px] text-stone-400 mt-0.5">${m.tgl}</div>
+          </div>
+          ${statusBadge(m.status)}
+        </div>
+        <div class="flex items-center gap-2 mb-3">
+          <div class="bg-green-50 border border-green-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-green-700">${escHtml(m.dari)}</div>
+          <div class="flex-1 flex items-center">${SVG_ARR}</div>
+          <div class="bg-red-50 border border-red-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-red-700">${escHtml(m.ke)}</div>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          ${[['Volume',m.vol+' '+m.sat],['Nilai',fmtK(m.nilai)],['Estimasi',m.eta]].map(([k,v])=>`
+          <div class="bg-stone-50 rounded-xl p-2 text-center">
+            <div class="text-xs font-bold text-stone-700">${v}</div>
+            <div class="text-[10px] text-stone-400">${k}</div>
+          </div>`).join('')}
+        </div>
+      </div>`).join('')}
+      `}
+    </div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════
+   SCREEN: AKUN
+══════════════════════════════════════ */
+function renderAkun(){
+  const u=state.user;
+  const colMap={petani:'green',pembeli:'blue',koperasi:'amber',pemerintah:'purple'};
+  const col=colMap[u.role]||'green';
+  const tab=state.akunTab;
+  return `
+  <div>
+    <div class="gh px-4 pt-12 pb-5">
+      <div class="flex items-center gap-4 mb-3">
+        ${avatar(u.init,'lg',col)}
+        <div>
+          <div class="text-white font-extrabold text-lg leading-tight">${escHtml(u.name)}</div>
+          <div class="text-green-300 text-xs mt-0.5">${ROLE_LABEL[u.role]}</div>
+          <div class="text-green-200 text-xs">📍 ${escHtml(u.loc)}</div>
+        </div>
+      </div>
+      <div class="flex gap-2 flex-wrap">
+        <span class="bg-white/20 text-white text-xs px-3 py-1 rounded-full font-semibold">Bergabung ${u.join}</span>
+        ${u.rating?`<span class="bg-amber-400/30 text-amber-100 text-xs px-3 py-1 rounded-full font-semibold">⭐ ${u.rating} rating</span>`:''}
+        ${u.anggota?`<span class="bg-white/20 text-white text-xs px-3 py-1 rounded-full font-semibold">${u.anggota} anggota</span>`:''}
+      </div>
+    </div>
+    <div class="flex bg-white border-b border-stone-100">
+      <button class="flex-1 py-3 text-xs font-bold ${tab==='finance'?'text-green-700 border-b-2 border-green-700':'text-stone-400'}" data-akun-tab="finance">TaniFinance 💰</button>
+      <button class="flex-1 py-3 text-xs font-bold ${tab==='logistik'?'text-green-700 border-b-2 border-green-700':'text-stone-400'}" data-akun-tab="logistik">LogiSmart 🚚</button>
+    </div>
+    <div class="px-4 pt-4">
+      ${tab==='finance'?`
+      <div class="text-xs text-stone-400 mb-3">Produk pembiayaan tersedia untuk Anda</div>
+      ${FINANCING.map(f=>`
+      <div class="bg-white rounded-2xl p-4 shadow-card mb-3">
+        <div class="flex items-start gap-3 mb-3">
+          <span class="text-4xl leading-none">${f.icon}</span>
+          <div class="flex-1">
+            <div class="font-extrabold text-stone-800 text-sm">${escHtml(f.nama)}</div>
+            <div class="text-xs text-stone-400 mt-0.5">${escHtml(f.prov)}</div>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <div class="text-green-700 font-extrabold text-2xl">${f.bunga}%</div>
+            <div class="text-[10px] text-stone-400">/tahun</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <div class="bg-stone-50 rounded-xl p-2.5"><div class="text-[10px] text-stone-400">Maks. pinjaman</div><div class="font-extrabold text-stone-700 text-sm">${fmtK(f.maks)}</div></div>
+          <div class="bg-stone-50 rounded-xl p-2.5"><div class="text-[10px] text-stone-400">Tenor</div><div class="font-extrabold text-stone-700 text-sm">${f.tenor} bulan</div></div>
+        </div>
+        <div class="text-xs text-stone-500 mb-1"><span class="font-bold text-stone-600">Syarat: </span>${escHtml(f.syarat)}</div>
+        <div class="text-xs text-stone-500 mb-3"><span class="font-bold text-stone-600">Pencairan: </span>${f.cair}</div>
+        <div class="flex gap-1 mb-3 flex-wrap">${f.tags.map(t=>badge(t,'green')).join('')}</div>
+        <button class="w-full border-2 border-green-700 text-green-700 font-extrabold py-2.5 rounded-xl text-sm">Ajukan Sekarang</button>
+      </div>`).join('')}
+      `:/* LOGISTIK */`
+      <div class="text-xs text-stone-400 mb-3">${LOGISTIK.length} pengiriman aktif & selesai</div>
+      ${LOGISTIK.map(l=>`
+      <div class="bg-white rounded-2xl p-4 shadow-card mb-3">
+        <div class="flex items-start justify-between mb-2">
+          <div>
+            <div class="font-extrabold text-stone-800 text-sm">${escHtml(l.kom)}</div>
+            <div class="text-[11px] text-stone-400 mt-0.5">${l.no}</div>
+          </div>
+          ${statusBadge(l.status)}
+        </div>
+        <div class="flex items-center gap-1 mb-3 text-xs text-stone-600">
+          <span class="font-bold">${escHtml(l.dari)}</span>
+          ${SVG_ARR}
+          <span class="font-bold">${escHtml(l.ke)}</span>
+        </div>
+        <div class="mb-3">
+          <div class="flex justify-between text-[10px] text-stone-400 mb-1">
+            <span>Progress pengiriman</span><span>${l.prog}%</span>
+          </div>
+          ${progressBar(l.prog,l.status)}
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="bg-stone-50 rounded-xl p-2"><div class="text-[10px] text-stone-400">Driver</div><div class="font-bold text-stone-700">${escHtml(l.driver)}</div></div>
+          <div class="bg-stone-50 rounded-xl p-2"><div class="text-[10px] text-stone-400">Plat / Biaya</div><div class="font-bold text-stone-700">${l.plat!=='—'?l.plat:fmtRp(l.harga)}</div></div>
+        </div>
+        <div class="text-[11px] text-stone-400 mt-2">📅 ${l.eta}</div>
+      </div>`).join('')}
+      `}
+      <div class="mt-5 border-t border-stone-100 pt-5 mb-6">
+        <button id="logout-btn" class="w-full bg-red-50 border border-red-100 text-red-600 font-bold py-3 rounded-2xl text-sm">🔄 Ganti Akun / Keluar</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════
+   RENDER
+══════════════════════════════════════ */
+function render(){
+  const shell=document.getElementById('shell');
+  if(!state.user){
+    shell.innerHTML=renderLogin();
+    bindLogin();
+    return;
+  }
+  const screens={beranda:renderBeranda,pasar:renderPasar,harga:renderHarga,match:renderMatch,akun:renderAkun};
+  const content=(screens[state.tab]||renderBeranda)();
+  shell.innerHTML=`
+    <div class="tab-content">${content}</div>
+    ${renderBottomNav()}
+  `;
+  bindApp();
+}
+
+/* ══════════════════════════════════════
+   EVENT BINDING
+══════════════════════════════════════ */
+function bindLogin(){
+  document.querySelectorAll('[data-login]').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const role=el.dataset.login;
+      const u=USERS.find(x=>x.role===role);
+      setState({user:u,tab:'beranda',notifOpen:false});
+    });
+  });
+}
+
+function bindApp(){
+  // Bottom nav
+  document.querySelectorAll('[data-nav]').forEach(el=>{
+    el.addEventListener('click',()=>setState({tab:el.dataset.nav,pasarSel:null,notifOpen:false}));
+  });
+
+  // Notif toggle
+  const nb=document.getElementById('notif-btn');
+  if(nb) nb.addEventListener('click',()=>setState({notifOpen:!state.notifOpen}));
+  const no=document.getElementById('notif-overlay');
+  if(no) no.addEventListener('click',()=>setState({notifOpen:false}));
+
+  // Logout
+  const lb=document.getElementById('logout-btn');
+  if(lb) lb.addEventListener('click',()=>setState({user:null,tab:'beranda',notifOpen:false,pasarSel:null,pasarQ:'',pasarCat:'Semua',hargaSel:0,matchTab:'peta',akunTab:'finance'}));
+
+  // Pasar
+  const pq=document.getElementById('pasar-q');
+  if(pq) pq.addEventListener('input',e=>setState({pasarQ:e.target.value}));
+  const pc=document.getElementById('pasar-clear');
+  if(pc) pc.addEventListener('click',()=>setState({pasarQ:''}));
+  const pb=document.getElementById('pasar-back');
+  if(pb) pb.addEventListener('click',()=>setState({pasarSel:null}));
+  document.querySelectorAll('[data-cat]').forEach(el=>{
+    el.addEventListener('click',()=>setState({pasarCat:el.dataset.cat}));
+  });
+  document.querySelectorAll('[data-open-prod]').forEach(el=>{
+    el.addEventListener('click',()=>setState({tab:'pasar',pasarSel:parseInt(el.dataset.openProd)}));
+  });
+
+  // Harga
+  document.querySelectorAll('[data-harga-sel]').forEach(el=>{
+    el.addEventListener('click',()=>setState({hargaSel:parseInt(el.dataset.hargaSel)}));
+  });
+
+  // Match tabs
+  document.querySelectorAll('[data-match-tab]').forEach(el=>{
+    el.addEventListener('click',()=>setState({matchTab:el.dataset.matchTab}));
+  });
+
+  // Akun tabs
+  document.querySelectorAll('[data-akun-tab]').forEach(el=>{
+    el.addEventListener('click',()=>setState({akunTab:el.dataset.akunTab}));
+  });
+}
+
+// Boot
+render();
+</script>
+</body>
+</html>
