@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8"/>
@@ -641,6 +641,12 @@ function pageBeranda() {
     {icon:'✅',l:'Surplus',        v:sur.length,              sub:'Wilayah'},
     {icon:'🔴',l:'Defisit',        v:def.length,              sub:'Wilayah perlu intervensi'},
     {icon:'⚠️',l:'Early Warning',  v:EARLY_WARNINGS.length,   sub:'Aktif saat ini'},
+  ];
+  else if(u.role==='system_admin' || u.role==='admin') kpis=[
+    {icon:'👥',l:'Total Pengguna',    v:'1.284',      sub:'Lintas Otoritas'},
+    {icon:'🏛️',l:'Koperasi Aktif',   v:'48',         sub:'SimKopdes sync'},
+    {icon:'🧠',l:'AI Model Aktif',    v:'10',         sub:'Pipeline berjalan'},
+    {icon:'⚡',l:'System Health',     v:'99.9%',      sub:'Semua Normal'},
   ];
   else kpis=[
     {icon:'💰',l:'Budget Tersedia',  v:fmtK(u.saldo),      sub:'Siap pre-order'},

@@ -245,9 +245,11 @@ function aiCard(r){
     '<button class="tap" data-flow="'+r.flow+'" style="margin-top:8px;background:'+col+';color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:10px">'+esc(r.action)+'</button>'+
   '</div>';
 }
-function kpiBox(icon,label,val,sub,color){
+function kpiBox(icon,label,val,sub,color,action){
   color=color||'#1c1a17';
-  return '<div style="background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.04)">'+
+  var act = action ? ' onclick="'+action+'"' : '';
+  var cur = action ? ' style="cursor:pointer"' : '';
+  return '<div class="tap"'+act+cur+' style="background:#fff;border:1px solid #e8e4dd;border-radius:14px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.04)">'+
     '<div style="font-size:20px;margin-bottom:5px">'+icon+'</div>'+
     '<div style="font-size:10px;font-weight:700;color:#9c9a92;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">'+label+'</div>'+
     '<div style="font-size:20px;font-weight:800;color:'+color+';font-family:DM Mono,monospace;line-height:1.1">'+val+'</div>'+
@@ -1237,9 +1239,15 @@ FLOWS['detail_item'] = [
             infoRow('Harga Beli Konsumen',fmtRp(c.hK),'')+infoRow('Harga Jual Petani',fmtRp(c.hP),'')+
           '</div>'+histHtml+moveHtml+relHtml+
         '</div>';
-      var acts='<button class="tap" onclick="M.open(\'edit_komoditas\')" style="flex:1;background:#eff6ff;color:#1d4ed8;font-weight:700;padding:12px;border-radius:10px;font-size:12px">Update Manual</button>';
-      if(u.role==='admin') acts+='<button class="tap" onclick="M.open(\'hapus_komoditas\')" style="background:#fef2f2;color:#dc2626;font-weight:700;padding:12px;border-radius:10px;font-size:12px">Hapus Berkas</button>';
-      return mHeader('Intelligence Entitas',s,t)+bdy+'<div style="padding:16px;display:flex;gap:8px;border-top:1px solid #e8e4dd">'+acts+'</div>';
+      var acts='';
+      if(d.kelola){
+        acts='<button class="tap" onclick="M.open(\'edit_komoditas\')" style="flex:1;background:#eff6ff;color:#1d4ed8;font-weight:700;padding:12px;border-radius:10px;font-size:12px">Update Manual</button>';
+        if(u.role==='admin') acts+='<button class="tap" onclick="M.open(\'hapus_komoditas\')" style="background:#fef2f2;color:#dc2626;font-weight:700;padding:12px;border-radius:10px;font-size:12px">Hapus Berkas</button>';
+        return mHeader('Intelligence Entitas',s,t)+bdy+'<div style="padding:16px;display:flex;gap:8px;border-top:1px solid #e8e4dd">'+acts+'</div>';
+      } else {
+        acts='<button class="tap" onclick="event.stopPropagation(); M.open(\'buat_preorder\')" style="flex:1;background:#eff6ff;color:#1d4ed8;font-weight:700;padding:12px;border-radius:10px;font-size:12px">🤖 Buat Pre-order AI</button>';
+        return mHeader('Intelligence Entitas',s,t)+bdy+'<div style="padding:16px;display:flex;gap:8px;border-top:1px solid #e8e4dd;background:#f7f6f3;border-radius:0 0 16px 16px">'+acts+'</div>';
+      }
     }
     else if(d.type==='wilayah'){
       var r=REGIONS[d.id];
@@ -1288,6 +1296,12 @@ FLOWS['detail_item'] = [
             infoRow('Komoditas Utama',esc(r.commod),'')+infoRow('Volume Terdata',(r.vol?fmt(r.vol)+'t':'Tidak Terekam'),'')+infoRow('Waktu Sinkronisasi','12 detik yang lalu','#15803d')+
           '</div>'+histHtml+moveHtml+relHtml+
         '</div>';
+      var acts='';
+      if(!d.kelola){
+        acts='<button class="tap" onclick="event.stopPropagation(); M.open(\'distribusi\')" style="flex:1;background:#f0fdf4;color:#15803d;font-weight:700;padding:12px;border-radius:10px;font-size:12px">🤖 Simulasi Distribusi AI</button>';
+        if(u.role==='pemerintah' || u.role==='admin') acts+='<button class="tap" onclick="event.stopPropagation(); M.open(\'siapkan_kebijakan\')" style="flex:1;background:#faf5ff;color:#9333ea;font-weight:700;padding:12px;border-radius:10px;font-size:12px">Simulasi Kebijakan</button>';
+        return mHeader('Detail Wilayah',s,t)+bdy+'<div style="padding:16px;display:flex;gap:8px;border-top:1px solid #e8e4dd;background:#f7f6f3;border-radius:0 0 16px 16px">'+acts+'</div>';
+      }
       return mHeader('Detail Wilayah',s,t)+bdy;
     }
     else if(d.type==='koperasi'){
@@ -1338,8 +1352,14 @@ FLOWS['detail_item'] = [
           '</div>'+histHtml+moveHtml+relHtml+
         '</div>';
       var acts='';
-      if(u.role==='admin') acts='<div style="padding:16px;display:flex;gap:8px;border-top:1px solid #e8e4dd"><button class="tap" style="flex:1;background:#eff6ff;color:#1d4ed8;font-weight:700;padding:12px;border-radius:10px;font-size:12px">Edit Internal Koperasi</button></div>';
-      return mHeader('Data Kopdes',s,t)+bdy+acts;
+      if(d.kelola){
+        if(u.role==='admin') acts='<div style="padding:16px;display:flex;gap:8px;border-top:1px solid #e8e4dd"><button class="tap" style="flex:1;background:#eff6ff;color:#1d4ed8;font-weight:700;padding:12px;border-radius:10px;font-size:12px">Edit Internal Koperasi</button></div>';
+        return mHeader('Data Kopdes',s,t)+bdy+acts;
+      } else {
+        acts='<button class="tap" onclick="event.stopPropagation(); M.open(\'rekrutmen\')" style="flex:1;background:#eff6ff;color:#1d4ed8;font-weight:700;padding:12px;border-radius:10px;font-size:12px">🤖 Optimasi Rekrutmen</button>'+
+             '<button class="tap" onclick="event.stopPropagation(); M.open(\'forecast\')" style="flex:1;background:#fefce8;color:#a16207;font-weight:700;padding:12px;border-radius:10px;font-size:12px">🤖 Forecast AI</button>';
+        return mHeader('Intelligence Koperasi',s,t)+bdy+'<div style="padding:16px;display:flex;gap:8px;border-top:1px solid #e8e4dd;background:#f7f6f3;border-radius:0 0 16px 16px">'+acts+'</div>';
+      }
     }
     else if(d.type==='anggota'){
       var ang=ANGGOTA_LIST[d.id];
@@ -1379,9 +1399,16 @@ FLOWS['detail_item'] = [
           '</div>';
       }
       bdy += relHtml + '</div>';
-      var acts='<button class="tap" onclick="M.open(\'edit_anggota\')" style="flex:1;background:#eff6ff;color:#1d4ed8;font-weight:700;padding:12px;border-radius:10px;font-size:12px">Update Profil</button>'+
+      var acts='';
+      if(d.kelola){
+        acts='<button class="tap" onclick="M.open(\'edit_anggota\')" style="flex:1;background:#eff6ff;color:#1d4ed8;font-weight:700;padding:12px;border-radius:10px;font-size:12px">Update Profil</button>'+
              '<button class="tap" onclick="M.open(\'hapus_anggota\')" style="background:#fef2f2;color:#dc2626;font-weight:700;padding:12px;border-radius:10px;font-size:12px">Cabut Status</button>';
-      return mHeader('Intelligence Petani',s,t)+bdy+'<div style="padding:16px;display:flex;gap:8px;border-top:1px solid #e8e4dd">'+acts+'</div>';
+        return mHeader('Intelligence Petani',s,t)+bdy+'<div style="padding:16px;display:flex;gap:8px;border-top:1px solid #e8e4dd">'+acts+'</div>';
+      } else {
+        acts='<button class="tap" onclick="event.stopPropagation(); M.open(\'kirim_anggota\')" style="flex:1;background:#f0fdf4;color:#15803d;font-weight:700;padding:12px;border-radius:10px;font-size:12px">🤖 Rek. Tanam AI</button>'+
+             '<button class="tap" onclick="event.stopPropagation(); M.open(\'ajukan_kur\')" style="flex:1;background:#eff6ff;color:#1d4ed8;font-weight:700;padding:12px;border-radius:10px;font-size:12px">🤖 Modal AI</button>';
+        return mHeader('Intelligence Petani',s,t)+bdy+'<div style="padding:16px;display:flex;gap:8px;border-top:1px solid #e8e4dd;background:#f7f6f3;border-radius:0 0 16px 16px">'+acts+'</div>';
+      }
     }
   }
 ];
@@ -1402,6 +1429,110 @@ function selectSupplier(el, idx){
   document.getElementById('f-selected-supplier').value = suppliers[idx];
   document.getElementById('f-selected-harga').value = Math.round(14000*hargaList[idx]);
 }
+
+FLOWS['detail_kpi'] = [
+  function(){
+    var s=M.step, d=M.data, t=M.total;
+    var bdy='';
+    if(d.id==='pengguna'){
+      bdy='<div class="mo-body">'+
+        '<div style="font-size:18px;font-weight:800;color:#1c1a17;margin-bottom:12px">👥 Distribusi Akses Pengguna</div>'+
+        '<div style="background:#fff;border:1px solid #e8e4dd;border-radius:12px;padding:12px;margin-bottom:16px">'+
+          '<div style="font-size:11px;font-weight:700;color:#9c9a92;margin-bottom:8px">BREAKDOWN BERDASARKAN PERAN</div>'+
+          infoRow('Sertifikasi Petani (Aktif)','854 Pengguna','#15803d') + 
+          infoRow('Pengurus Koperasi (Kopdes)','48 Pengguna','') + 
+          infoRow('Aparatur Pemerintah','8 Pengguna','') + 
+          infoRow('Entitas Pembeli (B2B/Ritel)','374 Pengguna','') +
+        '</div>'+
+        '<div style="font-size:12px;font-weight:700;color:#1c1a17;margin-bottom:8px">⚡ Aktivitas Registrasi Terkini</div>'+
+        '<div style="background:#f7f6f3;border:1px solid #e8e4dd;border-radius:10px;padding:10px;font-size:11px;color:#9c9a92">'+
+          '<div style="margin-bottom:6px">🟢 Koperasi Tani Jaya menambahkan 12 Anggota Baru</div>'+
+          '<div style="margin-bottom:6px">🟢 Verifikasi Pembeli: PT Pangan Nusantara berhasil</div>'+
+          '<div>🟡 2 Registrasi tertunda (kurang KTP)</div>'+
+        '</div>'+
+      '</div>';
+      return mHeader('Laporan Metrik: Pengguna',s,t)+bdy;
+    } else if(d.id==='koperasi'){
+      var kopList = [
+        {n:'KKMP Cilangkap', l:'Depok', m:122},
+        {n:'KUD Harapan Tani', l:'Demak', m:340},
+        {n:'BUMDes Makmur Jaya', l:'Kediri', m:218}
+      ];
+      bdy='<div class="mo-body">'+
+        '<div style="font-size:18px;font-weight:800;color:#1c1a17;margin-bottom:12px">🏛️ Top Koperasi Terhubung</div>'+
+        '<div style="background:#f0fdf4;border:1px solid #dcfce7;border-radius:12px;padding:12px;margin-bottom:16px;color:#15803d;font-size:11px;font-weight:600">Sinkronisasi SimKopdes berjalan normal. Total 48 entitas terverifikasi.</div>'+
+        '<div style="display:flex;flex-direction:column;gap:6px">'+
+        kopList.map(function(k,i){
+          return '<div class="tap" style="background:#fff;border:1px solid #e8e4dd;padding:10px;border-radius:8px;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="M.open(\'detail_item\',{type:\'koperasi\',id:'+i+'})">'+
+            '<div><div style="font-size:12px;font-weight:700;color:#1c1a17">'+esc(k.n)+'</div><div style="font-size:10px;color:#9c9a92">📍 '+esc(k.l)+'</div></div>'+
+            '<div style="font-size:11px;color:#15803d;font-weight:700">'+k.m+' Petani</div>'+
+          '</div>';
+        }).join('')+
+        '</div></div>';
+      return mHeader('Filter Terhubung: Koperasi',s,t)+bdy;
+    } else if(d.id==='ai_model'){
+      bdy='<div class="mo-body">'+
+        '<div style="font-size:18px;font-weight:800;color:#1c1a17;margin-bottom:12px">🧠 AI Model Pipeline Health</div>'+
+        '<div style="background:#fff;border:1px solid #e8e4dd;border-radius:12px;padding:12px;margin-bottom:16px">'+
+          infoRow('Model Demand Forecast','Online (Akurasi 94%)','#15803d') + 
+          infoRow('Model Prediksi Panen','Online (Akurasi 91%)','#15803d') + 
+          infoRow('Sistem Pre-order AI','Online (Matching Rate 88%)','#15803d') + 
+          infoRow('Optimasi Rute Logistik','Sleep (Trigger manual)','#d97706') +
+        '</div>'+
+        '<div style="font-size:12px;font-weight:700;color:#1c1a17;margin-bottom:8px">Last Retraining Sync</div>'+
+        '<div style="font-size:11px;color:#9c9a92">Pipeline di-retrain setiap 24 jam dengan data satelit dan harga PIHPS. Terakhir sinkronisasi: H-4 menit.</div>'+
+      '</div>';
+      return mHeader('Laporan Metrik: AI Aktif',s,t)+bdy;
+    } else if(d.id==='system'){
+      bdy='<div class="mo-body">'+
+        '<div style="font-size:18px;font-weight:800;color:#1c1a17;margin-bottom:12px">⚡ System API & Cloud Health</div>'+
+        '<div style="background:#fff;border:1px solid #e8e4dd;border-radius:12px;padding:12px;margin-bottom:16px">'+
+          infoRow('Uptime (90 hari)','99.98%','#15803d') + 
+          infoRow('API SimKopdes','Latency ~42ms','#15803d') + 
+          infoRow('API BMKG/Satelit','Latency ~110ms','#15803d') + 
+          infoRow('Database Load','14% CPU Usage','#15803d') +
+        '</div>'+
+        '<div style="background:#f0fdf4;border:1px solid #dcfce7;border-radius:10px;padding:12px;color:#15803d;font-size:11px;font-weight:600">✅ Seluruh sistem PanenHub beroperasi dengan normal tanpa anomali server.</div>'+
+      '</div>';
+      return mHeader('Laporan Metrik: Server',s,t)+bdy;
+    } else if(d.id==='finansial'){
+      bdy='<div class="mo-body">'+
+        '<div style="font-size:18px;font-weight:800;color:#1c1a17;margin-bottom:12px">💰 Rincian Finansial</div>'+
+        '<div style="background:#fff;border:1px solid #e8e4dd;border-radius:12px;padding:12px;margin-bottom:16px">'+
+          '<div style="font-size:11px;font-weight:700;color:#9c9a92;margin-bottom:8px">LEDGER TERAKHIR</div>'+
+          infoRow('Deposit Wallet',fmtRp(4250000),'#15803d') + 
+          infoRow('Estimasi Pencairan Tunda',fmtRp(1800000),'') + 
+          infoRow('Pengeluaran Siklus Ini',fmtRp(540000),'#dc2626') + 
+        '</div>'+
+        '<div style="font-size:11px;color:#9c9a92">Metrik pendanaan ini tersinkronisasi otomatis dengan Escrow Bank Mitra.</div>'+
+      '</div>';
+      return mHeader('Metrik Finansial',s,t)+bdy;
+    } else if(d.id==='performa'){
+      bdy='<div class="mo-body">'+
+        '<div style="font-size:18px;font-weight:800;color:#1c1a17;margin-bottom:12px">⭐ Rating & Reputasi</div>'+
+        '<div style="background:#fff;border:1px solid #e8e4dd;border-radius:12px;padding:12px;margin-bottom:16px">'+
+          infoRow('Akurasi Hasil Panen','95% Sesuai Prediksi','#15803d') + 
+          infoRow('Kecepatan Respon','Kurang dari 4 jam','#15803d') + 
+          infoRow('Kualitas Komoditas','Grade A Rata-rata','#15803d') + 
+        '</div>'+
+        '<div style="font-size:11px;color:#9c9a92">Credit score ini digunakan secara otomatis oleh model AI untuk menentukan prioritas permintaan Pre-order.</div>'+
+      '</div>';
+      return mHeader('Detail Reputasi',s,t)+bdy;
+    } else if(d.id==='match'){
+      bdy='<div class="mo-body">'+
+        '<div style="font-size:18px;font-weight:800;color:#1c1a17;margin-bottom:12px">🔗 AI Fulfillment Status</div>'+
+        '<div style="background:#fff;border:1px solid #e8e4dd;border-radius:12px;padding:12px">'+
+          infoRow('Pre-order B2B Match','12 Ton Beras IR64','#15803d') + 
+          infoRow('Pengiriman Berlangsung','3 Armada Logistik Aktif','') + 
+        '</div>'+
+      '</div>';
+      return mHeader('Laporan AI Match',s,t)+bdy;
+    } else {
+      bdy='<div class="mo-body"><div style="background:#f7f6f3;border:1px solid #e8e4dd;border-radius:12px;padding:16px;text-align:center;font-size:12px;color:#9c9a92">Detail laporan untuk metrik ini belum tersedia.</div></div>';
+      return mHeader('Laporan Metrik',s,t)+bdy;
+    }
+  }
+];
 
 /* ═══════════════════════════
    STATE
@@ -1491,25 +1622,31 @@ function screenBeranda(){
     headerStats='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px">'+
       ['245 Anggota','Rp 2.4M Modal','3 Match Aktif'].map(function(v,i){
         var l=['Anggota','Modal','Match'];
-        return '<div style="background:rgba(255,255,255,.12);border-radius:10px;padding:8px;text-align:center"><div style="color:#fff;font-weight:800;font-size:13px">'+v.split(' ')[0]+'</div><div style="color:rgba(255,255,255,.5);font-size:10px">'+l[i]+'</div></div>';
+        return '<div class="tap" onclick="M.open(\'detail_kpi\',{id:\''+(i===0?'pengguna':i===1?'finansial':'match')+'\'})" style="cursor:pointer;background:rgba(255,255,255,.12);border-radius:10px;padding:8px;text-align:center"><div style="color:#fff;font-weight:800;font-size:13px">'+v.split(' ')[0]+'</div><div style="color:rgba(255,255,255,.5);font-size:10px">'+l[i]+'</div></div>';
       }).join('')+
     '</div>';
   } else if(u.role==='petani'){
     headerStats='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">'+
-      [['Rp 4.25jt','Saldo'],['⭐ 4.8','Rating']].map(function(x){
-        return '<div style="background:rgba(255,255,255,.12);border-radius:10px;padding:8px;text-align:center"><div style="color:#fff;font-weight:800;font-size:13px">'+x[0]+'</div><div style="color:rgba(255,255,255,.5);font-size:10px">'+x[1]+'</div></div>';
+      [['Rp 4.25jt','Saldo'],['⭐ 4.8','Rating']].map(function(x,i){
+        return '<div class="tap" onclick="M.open(\'detail_kpi\',{id:\''+(i===0?'finansial':'performa')+'\'})" style="cursor:pointer;background:rgba(255,255,255,.12);border-radius:10px;padding:8px;text-align:center"><div style="color:#fff;font-weight:800;font-size:13px">'+x[0]+'</div><div style="color:rgba(255,255,255,.5);font-size:10px">'+x[1]+'</div></div>';
       }).join('')+
     '</div>';
   } else if(u.role==='pemerintah'){
     headerStats='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px">'+
-      [[surp.length,'Surplus','#4ade80'],[1,'Seimbang','#fbbf24'],[def.length,'Defisit ⚠️','#f87171']].map(function(x){
-        return '<div style="background:rgba(255,255,255,.1);border-radius:10px;padding:7px;text-align:center"><div style="font-weight:800;font-size:16px;color:'+x[2]+'">'+x[0]+'</div><div style="color:rgba(255,255,255,.45);font-size:9px">'+x[1]+'</div></div>';
+      [[surp.length,'Surplus','#4ade80',1],[1,'Seimbang','#fbbf24',0],[def.length,'Defisit ⚠️','#f87171',5]].map(function(x){
+        return '<div class="tap" onclick="M.open(\'detail_kpi\',{id:\'koperasi\'})" style="cursor:pointer;background:rgba(255,255,255,.1);border-radius:10px;padding:7px;text-align:center"><div style="font-weight:800;font-size:16px;color:'+x[2]+'">'+x[0]+'</div><div style="color:rgba(255,255,255,.45);font-size:9px">'+x[1]+'</div></div>';
+      }).join('')+
+    '</div>';
+  } else if(u.role==='admin') {
+    headerStats='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">'+
+      [['1.284','Total User',0],['48','Koperasi',0]].map(function(x,i){
+        return '<div class="tap" onclick="M.open(\'detail_kpi\',{id:\''+(i===0?'pengguna':'koperasi')+'\'})" style="cursor:pointer;background:rgba(255,255,255,.12);border-radius:10px;padding:8px;text-align:center"><div style="color:#fff;font-weight:800;font-size:13px">'+x[0]+'</div><div style="color:rgba(255,255,255,.5);font-size:10px">'+x[1]+'</div></div>';
       }).join('')+
     '</div>';
   } else {
     headerStats='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">'+
-      [['Rp 48.75jt','Budget'],['4 Pre-order','Aktif']].map(function(x){
-        return '<div style="background:rgba(255,255,255,.12);border-radius:10px;padding:8px;text-align:center"><div style="color:#fff;font-weight:800;font-size:13px">'+x[0]+'</div><div style="color:rgba(255,255,255,.5);font-size:10px">'+x[1]+'</div></div>';
+      [['Rp 48.75jt','Budget','M.open(\'detail_kpi\',{id:\'finansial\'})'],['4 Pre-order','Aktif','M.open(\'detail_kpi\',{id:\'match\'})']].map(function(x){
+        return '<div class="tap" onclick="'+x[2]+'" style="cursor:pointer;background:rgba(255,255,255,.12);border-radius:10px;padding:8px;text-align:center"><div style="color:#fff;font-weight:800;font-size:13px">'+x[0]+'</div><div style="color:rgba(255,255,255,.5);font-size:10px">'+x[1]+'</div></div>';
       }).join('')+
     '</div>';
   }
@@ -1912,7 +2049,7 @@ function screenKelola(){
   if(sub==='komoditas'){
     var komHtml='<div style="overflow-x:auto;background:#fff;border-radius:12px;border:1px solid #e8e4dd;margin-bottom:16px"><table style="width:100%;min-width:350px;border-collapse:collapse;font-size:12px"><thead><tr style="background:#f8fafc;color:#64748b;text-align:left;font-size:11px;text-transform:uppercase"><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Komoditas</th><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">H.Konsumen</th><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">H.Petani</th></tr></thead><tbody>';
     COMMODITIES.forEach(function(c,i){
-      komHtml+='<tr class="tap" onclick="M.open(\'detail_item\', {type:\'komoditas\', id:'+i+'})" style="border-bottom:1px solid #f1f5f9" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'\'">'+
+      komHtml+='<tr class="tap" onclick="M.open(\'detail_item\', {type:\'komoditas\', id:'+i+', kelola:true})" style="border-bottom:1px solid #f1f5f9" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'\'">'+
         '<td style="padding:10px 12px"><div style="font-weight:700;color:#1c1a17;display:flex;align-items:center;gap:6px"><div style="font-size:16px">'+c.em+'</div>'+esc(c.name)+'</div></td>'+
         '<td style="padding:10px 12px">'+fmtRp(c.hK)+'</td>'+
         '<td style="padding:10px 12px">'+fmtRp(c.hP)+'</td>'+
@@ -1924,7 +2061,7 @@ function screenKelola(){
     var regHtml='<div style="background:#f0fdf4;border:1px solid #dcfce7;color:#15803d;padding:12px;border-radius:12px;font-size:12px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px;line-height:1.4"><div class="pls" style="width:8px;height:8px;border-radius:50%;background:#22c55e;flex-shrink:0"></div> Master Data Wilayah otomatis diseleksi dan tersinkronisasi dari Portal Pangan Nasional.</div>';
     regHtml+='<div style="overflow-x:auto;background:#fff;border-radius:12px;border:1px solid #e8e4dd;margin-bottom:16px"><table style="width:100%;min-width:380px;border-collapse:collapse;font-size:12px"><thead><tr style="background:#f8fafc;color:#64748b;text-align:left;font-size:11px;text-transform:uppercase"><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Nama Daerah</th><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Status Area</th><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Vol. Terdata</th><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Tipe Data</th></tr></thead><tbody>';
     REGIONS.forEach(function(r,i){
-      regHtml+='<tr class="tap" onclick="M.open(\'detail_item\', {type:\'wilayah\', id:'+i+'})" style="border-bottom:1px solid #f1f5f9" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'\'">'+
+      regHtml+='<tr class="tap" onclick="M.open(\'detail_item\', {type:\'wilayah\', id:'+i+', kelola:true})" style="border-bottom:1px solid #f1f5f9" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'\'">'+
         '<td style="padding:10px 12px;font-weight:700;color:#1c1a17">'+esc(r.name)+'</td>'+
         '<td style="padding:10px 12px">'+stBadge(r.status)+'</td>'+
         '<td style="padding:10px 12px">'+(r.vol?fmt(r.vol)+'t':'Stabil')+'</td>'+
@@ -1941,8 +2078,8 @@ function screenKelola(){
       {nama:'BUMDes Makmur Jaya', loc:'Ngampel, Kediri', anggota:218, status:'warning'}
     ];
     kopHtml+='<div style="overflow-x:auto;background:#fff;border-radius:12px;border:1px solid #e8e4dd;margin-bottom:16px"><table style="width:100%;min-width:480px;border-collapse:collapse;font-size:12px"><thead><tr style="background:#f8fafc;color:#64748b;text-align:left;font-size:11px;text-transform:uppercase"><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Nama Koperasi</th><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Lokasi</th><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Total Anggota</th><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Status</th></tr></thead><tbody>';
-    mockKop.forEach(function(r){
-      kopHtml+='<tr class="tap" onclick="M.open(\'detail_item\', {type:\'koperasi\', nama:\''+esc(r.nama)+'\', loc:\''+esc(r.loc)+'\', anggota:'+r.anggota+', status:\''+r.status+'\'})" style="border-bottom:1px solid #f1f5f9" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'\'">'+
+    mockKop.forEach(function(r,i){
+      kopHtml+='<tr class="tap" onclick="M.open(\'detail_item\', {type:\'koperasi\', id:'+i+', kelola:true})" style="border-bottom:1px solid #f1f5f9" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'\'">'+
         '<td style="padding:10px 12px;font-weight:700;color:#1c1a17">'+esc(r.nama)+'</td>'+
         '<td style="padding:10px 12px;color:#64748b">📍 '+esc(r.loc)+'</td>'+
         '<td style="padding:10px 12px">'+r.anggota+' petani</td>'+
@@ -1954,7 +2091,7 @@ function screenKelola(){
   else if(sub==='anggota'){
     var usrHtml='<div style="overflow-x:auto;background:#fff;border-radius:12px;border:1px solid #e8e4dd;margin-bottom:16px"><table style="width:100%;min-width:350px;border-collapse:collapse;font-size:12px"><thead><tr style="background:#f8fafc;color:#64748b;text-align:left;font-size:11px;text-transform:uppercase"><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Petani</th><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Lahan</th><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Komoditas</th><th style="padding:10px 12px;border-bottom:1px solid #e8e4dd">Status</th></tr></thead><tbody>';
     ANGGOTA_LIST.forEach(function(r,i){
-      usrHtml+='<tr class="tap" onclick="M.open(\'detail_item\', {type:\'anggota\', id:'+i+'})" style="border-bottom:1px solid #f1f5f9" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'\'">'+
+      usrHtml+='<tr class="tap" onclick="M.open(\'detail_item\', {type:\'anggota\', id:'+i+', kelola:true})" style="border-bottom:1px solid #f1f5f9" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'\'">'+
         '<td style="padding:10px 12px;font-weight:700;color:#1c1a17">'+esc(r.nama)+'</td>'+
         '<td style="padding:10px 12px">'+esc(r.lahan)+'</td>'+
         '<td style="padding:10px 12px">'+esc(r.komoditas)+'</td>'+
