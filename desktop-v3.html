@@ -1044,6 +1044,18 @@ FLOWS['detail_item'] = [
               '<div style="font-size:12px;font-weight:700;color:#1e293b">'+esc(cr.r.name)+'</div><div style="font-size:10px;color:#64748b;background:#f1f5f9;padding:2px 6px;border-radius:4px">'+stBadge(cr.r.status)+'</div>'+
             '</div>';
           }).join('')+'</div>';
+      var covK_kom = KOPERASI_LIST.reduce(function(acc,k,i){ 
+         if(d.id===0 && i===0) acc.push({k:k,id:i}); else if(d.id===5 && i===0) acc.push({k:k,id:i}); else if((d.id===1||d.id===2) && i===1) acc.push({k:k,id:i}); else if(d.id===1 && i===2) acc.push({k:k,id:i}); return acc;
+      }, []);
+      if(covK_kom.length>0){
+        relHtml+='<div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:8px;margin-top:16px">🏛️ Koperasi Penyuplai Utama</div>'+
+          '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">'+
+          covK_kom.map(function(cr){
+            return '<div class="tap" style="cursor:pointer;background:#fff;border:1px solid #e2e8f0;padding:10px;border-radius:8px;display:flex;justify-content:space-between;align-items:center" onclick="M.open(\'detail_item\',{type:\'koperasi\',id:'+cr.id+'})">'+
+              '<div style="font-size:12px;font-weight:700;color:#1e293b">'+esc(cr.k.nama)+'</div><div style="font-size:10px;color:#15803d;font-weight:700">'+cr.k.anggota+' Petani</div>'+
+            '</div>';
+          }).join('')+'</div>';
+      }
       }
       
       var bdy='<div class="mo-body">'+
@@ -1082,6 +1094,16 @@ FLOWS['detail_item'] = [
           covK.map(function(cr){
             return '<div class="tap" style="cursor:pointer;background:#fff;border:1px solid #e2e8f0;padding:10px;border-radius:8px;display:flex;justify-content:space-between;align-items:center" onclick="M.open(\'detail_item\',{type:\'koperasi\',id:'+cr.id+'})">'+
               '<div style="font-size:12px;font-weight:700;color:#1e293b">'+esc(cr.k.nama)+'</div><div style="font-size:10px;color:#15803d;font-weight:700">'+cr.k.anggota+' Petani</div>'+
+            '</div>';
+          }).join('')+'</div>';
+      }
+      var covC = COMMODITIES.reduce(function(acc,c,i){ if(r.commod.includes(c.cat)||r.commod.includes(c.name.split(' ')[0])) acc.push({c:c,id:i}); return acc; }, []);
+      if(covC.length>0){
+        relHtml+='<div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:8px;margin-top:16px">🌾 Komoditas Unggulan Logistik</div>'+
+          '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">'+
+          covC.map(function(cr){
+            return '<div class="tap" style="cursor:pointer;background:#fff;border:1px solid #e2e8f0;padding:10px;border-radius:8px;display:flex;justify-content:space-between;align-items:center" onclick="M.open(\'detail_item\',{type:\'komoditas\',id:'+cr.id+'})">'+
+              '<div style="font-size:12px;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:6px"><span>'+cr.c.em+'</span>'+esc(cr.c.name)+'</div><div style="font-size:10px;color:#2563eb;font-weight:700">'+fmtRp(cr.c.hK)+'</div>'+
             '</div>';
           }).join('')+'</div>';
       }
@@ -1125,6 +1147,15 @@ FLOWS['detail_item'] = [
             '<div style="font-size:10px;color:#2563eb;font-weight:700">'+esc(an.komoditas)+'</div>'+
           '</div>';
         }).join('')+'</div>';
+      var covC_kop = d.id===0?[0,5] : (d.id===1?[1,2]:[1]);
+      relHtml+='<div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:8px;margin-top:16px">🌾 Spesialisasi Komoditas</div>'+
+      '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">'+
+      covC_kop.map(function(idx){
+          var cr = COMMODITIES[idx];
+          return '<div class="tap" style="cursor:pointer;background:#fff;border:1px solid #e2e8f0;padding:10px;border-radius:8px;display:flex;justify-content:space-between;align-items:center" onclick="M.open(\'detail_item\',{type:\'komoditas\',id:'+idx+'})">'+
+              '<div style="font-size:12px;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:6px"><span>'+cr.em+'</span>'+esc(cr.name)+'</div><div style="font-size:10px;background:#f1f5f9;color:#64748b;font-weight:600;padding:2px 6px;border-radius:4px">'+fmt(cr.stok)+' Ton</div>'+
+            '</div>';
+      }).join('')+'</div>';
       
       var bdy='<div class="mo-body">'+
           '<div style="margin-bottom:16px">'+
@@ -1155,6 +1186,20 @@ FLOWS['detail_item'] = [
           '<div>🟡 Absen rapat kelompok tani (Minggu lalu)</div>'+
         '</div>';
         
+      var kopId = d.id<=1?0:(d.id===2||d.id===3?1:2);
+      var kop = KOPERASI_LIST[kopId];
+      var relHtml='<div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:8px;margin-top:16px">🏛️ Manajemen Koperasi Induk</div>'+
+          '<div class="tap" style="cursor:pointer;background:#fff;border:1px solid #e2e8f0;padding:10px;border-radius:8px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px" onclick="M.open(\'detail_item\',{type:\'koperasi\',id:'+kopId+'})">'+
+            '<div style="font-size:12px;font-weight:700;color:#1e293b">'+esc(kop.nama)+'</div><div style="font-size:10px;color:#15803d;font-weight:700">'+kop.anggota+' Petani</div>'+
+          '</div>';
+      var comId = COMMODITIES.findIndex(function(c){return ang.komoditas.toLowerCase().includes(c.cat.toLowerCase())||ang.komoditas.toLowerCase().includes(c.name.split(' ')[0].toLowerCase());});
+      if(comId>=0){
+        relHtml+='<div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:8px;margin-top:16px">🌾 Indikator Harga Komoditas</div>'+
+          '<div class="tap" style="cursor:pointer;background:#fff;border:1px solid #e2e8f0;padding:10px;border-radius:8px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px" onclick="M.open(\'detail_item\',{type:\'komoditas\',id:'+comId+'})">'+
+            '<div style="font-size:12px;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:6px"><span>'+COMMODITIES[comId].em+'</span>'+esc(COMMODITIES[comId].name)+'</div><div style="font-size:10px;color:#2563eb;font-weight:700">'+fmtRp(COMMODITIES[comId].hK)+'</div>'+
+          '</div>';
+      }
+      
       var bdy='<div class="mo-body">'+
           '<div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">'+
             '<div style="width:54px;height:54px;border-radius:50%;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">👨‍🌾</div>'+
@@ -1162,7 +1207,7 @@ FLOWS['detail_item'] = [
           '</div>'+
           '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:14px;margin-bottom:16px">'+
             infoRow('Status Afiliasi',ang.status,'')+infoRow('Komoditas Aktif',ang.komoditas,'')+
-          '</div>'+histHtml+moveHtml+
+          '</div>'+histHtml+moveHtml+relHtml+
         '</div>';
       var acts='<button class="tap" onclick="M.open(\'edit_anggota\')" style="flex:1;background:#eff6ff;color:#2563eb;font-weight:700;padding:12px;border-radius:10px;font-size:12px">Update Profil</button>'+
              '<button class="tap" onclick="M.open(\'hapus_anggota\')" style="background:#fef2f2;color:#ef4444;font-weight:700;padding:12px;border-radius:10px;font-size:12px">Cabut Status</button>';
@@ -1518,8 +1563,8 @@ function pageBeranda(){
   else beritaPanel=
     '<div class="panel" style="margin-bottom:20px">'+
       '<div class="sec-hdr"><div class="sec-title">Komoditas Rekomendasi AI</div></div>'+
-      COMMODITIES.slice(0,4).map(function(c){
-        return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f0ede8">'+
+      COMMODITIES.slice(0,4).map(function(c,i){
+        return '<div class="tap" style="display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid #f0ede8;cursor:pointer;border-radius:8px" onclick="M.open(\'detail_item\',{type:\'komoditas\',id:'+i+'})" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'\'">'+
           '<span style="font-size:22px">'+c.em+'</span>'+
           '<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#1e293b">'+esc(c.name)+'</div><div style="font-size:11px;color:#94a3b8">'+esc(c.loc)+'</div></div>'+
           '<div style="text-align:right"><div style="font-size:13px;font-weight:800;color:#15803d;font-family:DM Mono,monospace">'+fmtRp(c.hK)+'</div>'+trendTag(c)+'</div>'+
@@ -1536,8 +1581,8 @@ function pageBeranda(){
       '<div>'+
         '<div class="panel" style="margin-bottom:16px">'+
           '<div class="sec-hdr"><div class="sec-title">Harga Hari Ini</div></div>'+
-          COMMODITIES.slice(0,4).map(function(c){
-            return '<button class="tap" data-harga-sel="'+COMMODITIES.indexOf(c)+'" data-nav-tab="data" style="width:100%;display:flex;align-items:center;gap:8px;padding:8px;border-radius:10px;margin-bottom:4px;text-align:left;background:#f8fafc;border:1px solid transparent" onmouseover="this.style.background=\'#f0fdf4\'" onmouseout="this.style.background=\'#f8fafc\'">'+
+          COMMODITIES.slice(0,4).map(function(c,i){
+            return '<button class="tap" onclick="M.open(\'detail_item\',{type:\'komoditas\',id:'+i+'})" style="width:100%;display:flex;align-items:center;gap:8px;padding:8px;border-radius:10px;margin-bottom:4px;text-align:left;background:#f8fafc;border:1px solid transparent;cursor:pointer" onmouseover="this.style.background=\'#f0fdf4\'" onmouseout="this.style.background=\'#f8fafc\'">'+
               '<span style="font-size:18px">'+c.em+'</span>'+
               '<div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:600;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(c.name.split(' ').slice(0,2).join(' '))+'</div></div>'+
               '<div style="font-size:12px;font-weight:800;color:#15803d;font-family:DM Mono,monospace;flex-shrink:0">'+fmtK(c.hK)+'</div>'+
@@ -1545,13 +1590,13 @@ function pageBeranda(){
             '</button>';
           }).join('')+
         '</div>'+
-        '<div class="panel">'+
+        '<div class="panel tap" style="cursor:pointer" onclick="M.open(\'detail_item\',{type:\'koperasi\',id:0})" onmouseover="this.style.boxShadow=\'0 4px 6px -1px rgba(0,0,0,0.1)\'" onmouseout="this.style.boxShadow=\'none\'">'+
           '<div class="sec-hdr"><div class="sec-title">KKMP Cilangkap</div></div>'+
           '<div style="font-size:22px;font-weight:800;color:#dc2626;font-family:DM Mono,monospace">0.204%</div>'+
           '<div style="font-size:11px;color:#64748b;margin-bottom:8px">Penetrasi anggota (122/59.703)</div>'+
           confBar(0.204*10,'#ef4444')+
           '<div style="font-size:11px;color:#64748b;margin-top:8px;line-height:1.5">Target AI 12 bulan: <strong style="color:#15803d">600-1.200 anggota</strong></div>'+
-          '<button class="tap" data-flow="rekrutmen" style="margin-top:10px;width:100%;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;font-size:12px;font-weight:700;padding:8px;border-radius:8px">Jalankan Rekrutmen AI →</button>'+
+          '<button class="tap" onclick="event.stopPropagation(); M.open(\'rekrutmen\')" style="margin-top:10px;width:100%;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;font-size:12px;font-weight:700;padding:8px;border-radius:8px">Jalankan Rekrutmen AI →</button>'+
         '</div>'+
       '</div>'+
     '</div>';
