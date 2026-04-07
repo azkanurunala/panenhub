@@ -153,6 +153,133 @@ const state = {
 };
 function setState(patch){ Object.assign(state,patch); render(); }
 
+function openModal(title, body, footer) {
+  const overlay = document.getElementById('modal-overlay');
+  const box = document.getElementById('modal-box');
+  box.innerHTML = `
+    <div style="padding:16px 20px;border-bottom:1px solid #f0ece8;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-weight:800;font-size:16px;color:#1c1a17">${title}</div>
+      <button onclick="closeModal()" style="width:32px;height:32px;border-radius:50%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:18px;color:#6b7280">✕</button>
+    </div>
+    <div style="padding:20px">${body}</div>
+    <div style="padding:12px 20px 24px;border-top:1px solid #f0ece8;display:flex;flex-direction:column;gap:8px">${footer}</div>
+  `;
+  overlay.style.display = 'flex';
+}
+function closeModal() {
+  document.getElementById('modal-overlay').style.display = 'none';
+}
+function confirmModal(title, message) {
+  openModal(title,
+    '<div style="text-align:center;padding:16px 0"><div style="width:64px;height:64px;background:#f0fdf4;border:2px solid #bbf7d0;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px">✓</div><div style="font-size:16px;font-weight:800;color:#1c1a17;margin-bottom:8px">' + title + '</div><div style="font-size:13px;color:#6b7280;line-height:1.5">' + message + '</div></div>',
+    '<button onclick="closeModal()" style="width:100%;background:#15803d;color:#fff;font-weight:700;padding:14px;border-radius:14px;font-size:15px">Tutup</button>'
+  );
+}
+function parseNumberInput(value) {
+  return parseInt(String(value || '').replace(/[^\d]/g, ''), 10) || 0;
+}
+function updateOrderEstimate(productId) {
+  const product = COMMODITIES.find(x => x.id === productId);
+  const qtyInput = document.getElementById('order-qty');
+  const totalEl = document.getElementById('order-total');
+  if(!product || !qtyInput || !totalEl) return;
+  const qty = Math.max(1, parseInt(qtyInput.value, 10) || 1);
+  qtyInput.value = qty;
+  totalEl.textContent = fmtRp(qty * product.hK);
+}
+function submitProductEdit(productId) {
+  const product = COMMODITIES.find(x => x.id === productId);
+  if(!product) return;
+  const name = (document.getElementById('edit-product-name')?.value || '').trim();
+  const price = parseNumberInput(document.getElementById('edit-product-price')?.value);
+  const stock = Math.max(0, parseInt(document.getElementById('edit-product-stock')?.value, 10) || 0);
+  if(name) product.name = name;
+  if(price > 0) product.hK = price;
+  product.stok = stock;
+  render();
+  confirmModal('Produk Berhasil Diperbarui', product.name + ' telah disimpan dengan harga ' + fmtRp(product.hK) + ' dan stok ' + fmt(product.stok) + ' kg.');
+}
+function submitProductOrder(productId) {
+  const product = COMMODITIES.find(x => x.id === productId);
+  if(!product) return;
+  const qty = Math.max(1, parseInt(document.getElementById('order-qty')?.value, 10) || 1);
+  const address = (document.getElementById('order-address')?.value || '').trim() || 'alamat pengiriman utama Anda';
+  confirmModal('Pesanan Dikonfirmasi', qty + ' kg ' + product.name + ' sedang disiapkan untuk dikirim ke ' + address + '. Total estimasi: ' + fmtRp(qty * product.hK) + '.');
+}
+function submitDistributionPlan(productId) {
+  const product = COMMODITIES.find(x => x.id === productId);
+  if(!product) return;
+  const region = document.getElementById('distribution-region')?.value || 'NTT';
+  const volume = Math.max(1, parseInt(document.getElementById('distribution-volume')?.value, 10) || 1);
+  const schedule = document.getElementById('distribution-schedule')?.value || 'Minggu ini';
+  confirmModal('Rencana Distribusi Dibuat', volume + ' kg ' + product.name + ' akan diarahkan ke ' + region + ' dengan target pengiriman ' + schedule + '.');
+}
+function submitIntervention(productId) {
+  const product = COMMODITIES.find(x => x.id === productId);
+  if(!product) return;
+  const action = document.getElementById('intervention-action')?.value || 'Pantau harga harian';
+  const note = (document.getElementById('intervention-note')?.value || '').trim() || 'Pemantauan lanjutan dijalankan otomatis oleh sistem.';
+  confirmModal('Intervensi Dicatat', action + ' untuk ' + product.name + ' telah dicatat. Catatan: ' + note);
+}
+function openProductAction(action, productId) {
+  const product = COMMODITIES.find(x => x.id === productId);
+  if(!product) return;
+  if(action === 'edit') {
+    openModal('✏️ Edit Produk',
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><span style="font-size:36px">' + product.foto + '</span><div><div style="font-weight:800;font-size:16px">' + product.name + '</div><div style="font-size:12px;color:#6b7280">' + product.loc + '</div></div></div>' +
+      '<div style="margin-bottom:12px"><label style="font-size:12px;font-weight:700;color:#6b7280;display:block;margin-bottom:6px">Nama Produk</label><input id="edit-product-name" type="text" value="' + escHtml(product.name) + '" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;font-size:14px;font-weight:600;cursor:text"></div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><label style="font-size:12px;font-weight:700;color:#6b7280;display:block;margin-bottom:6px">Harga Konsumen</label><input id="edit-product-price" type="text" value="' + fmtRp(product.hK) + '" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;font-size:14px;font-weight:600;cursor:text"></div><div><label style="font-size:12px;font-weight:700;color:#6b7280;display:block;margin-bottom:6px">Stok</label><input id="edit-product-stock" type="number" min="0" value="' + product.stok + '" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;font-size:14px;font-weight:600;cursor:text"></div></div>',
+      '<button onclick="submitProductEdit(' + product.id + ')" style="width:100%;background:#15803d;color:#fff;font-weight:700;padding:14px;border-radius:14px;font-size:15px">Simpan</button>' +
+      '<button onclick="closeModal()" style="width:100%;color:#6b7280;font-weight:600;padding:12px;font-size:14px">Batal</button>'
+    );
+    return;
+  }
+  if(action === 'buy') {
+    openModal('🛒 Beli Sekarang',
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><span style="font-size:36px">' + product.foto + '</span><div><div style="font-weight:800;font-size:16px">' + product.name + '</div><div style="font-size:12px;color:#6b7280">' + product.petani + ' · ' + product.loc + '</div></div></div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px"><div style="background:#f8fafc;border-radius:12px;padding:10px"><div style="font-size:10px;color:#6b7280">Harga</div><div style="font-weight:800;font-size:18px;color:#15803d">' + fmtRp(product.hK) + '</div></div><div style="background:#f8fafc;border-radius:12px;padding:10px"><div style="font-size:10px;color:#6b7280">Stok</div><div style="font-weight:800;font-size:18px">' + fmt(product.stok) + ' kg</div></div></div>' +
+      '<div style="margin-bottom:12px"><label style="font-size:12px;font-weight:700;color:#6b7280;display:block;margin-bottom:6px">Jumlah (kg)</label><input id="order-qty" type="number" min="1" max="' + product.stok + '" value="100" oninput="updateOrderEstimate(' + product.id + ')" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;font-size:14px;font-weight:600;cursor:text"></div>' +
+      '<div style="margin-bottom:12px"><label style="font-size:12px;font-weight:700;color:#6b7280;display:block;margin-bottom:6px">Alamat Pengiriman</label><textarea id="order-address" style="width:100%;min-height:88px;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;font-size:14px;font-weight:500;resize:none">Jl. Pasar Induk No. 12, Jakarta Selatan</textarea></div>' +
+      '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:10px;font-size:12px;color:#15803d">Estimasi total: <strong id="order-total">' + fmtRp(product.hK * 100) + '</strong></div>',
+      '<button onclick="submitProductOrder(' + product.id + ')" style="width:100%;background:#15803d;color:#fff;font-weight:700;padding:14px;border-radius:14px;font-size:15px">Konfirmasi Pesanan</button>' +
+      '<button onclick="closeModal()" style="width:100%;color:#6b7280;font-weight:600;padding:12px;font-size:14px">Batal</button>'
+    );
+    updateOrderEstimate(product.id);
+    return;
+  }
+  if(action === 'contact') {
+    openModal('📞 Hubungi Penjual',
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><span style="font-size:36px">' + product.foto + '</span><div><div style="font-weight:800;font-size:16px">' + product.petani + '</div><div style="font-size:12px;color:#6b7280">Mitra asal ' + product.loc + '</div></div></div>' +
+      '<div style="background:#f8fafc;border-radius:14px;padding:14px;margin-bottom:12px"><div style="font-size:12px;color:#6b7280;margin-bottom:6px">Pesan otomatis</div><div style="font-size:14px;font-weight:600;color:#1c1a17">Halo, saya tertarik dengan produk ' + product.name + '. Mohon info stok terbaru dan jadwal kirim terdekat.</div></div>' +
+      '<div style="font-size:12px;color:#6b7280;line-height:1.5">Permintaan akan diteruskan ke penjual melalui chat internal dan WhatsApp koperasi.</div>',
+      '<button onclick="confirmModal(' + JSON.stringify('Pesan Terkirim') + ',' + JSON.stringify('Permintaan informasi untuk ' + product.name + ' telah diteruskan ke penjual.') + ')" style="width:100%;background:#15803d;color:#fff;font-weight:700;padding:14px;border-radius:14px;font-size:15px">Kirim Pesan</button>' +
+      '<button onclick="closeModal()" style="width:100%;color:#6b7280;font-weight:600;padding:12px;font-size:14px">Tutup</button>'
+    );
+    return;
+  }
+  if(action === 'distribute') {
+    openModal('🚚 Rencana Distribusi',
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><span style="font-size:36px">' + product.foto + '</span><div><div style="font-weight:800;font-size:16px">' + product.name + '</div><div style="font-size:12px;color:#6b7280">Stok tersedia ' + fmt(product.stok) + ' kg</div></div></div>' +
+      '<div style="margin-bottom:12px"><label style="font-size:12px;font-weight:700;color:#6b7280;display:block;margin-bottom:6px">Wilayah Tujuan</label><select id="distribution-region" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;font-size:14px"><option>NTT</option><option>Papua</option><option>Kalimantan Tengah</option></select></div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><label style="font-size:12px;font-weight:700;color:#6b7280;display:block;margin-bottom:6px">Volume (kg)</label><input id="distribution-volume" type="number" min="1" max="' + product.stok + '" value="500" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;font-size:14px;font-weight:600;cursor:text"></div><div><label style="font-size:12px;font-weight:700;color:#6b7280;display:block;margin-bottom:6px">Target Kirim</label><select id="distribution-schedule" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;font-size:14px"><option>Minggu ini</option><option>3 hari ke depan</option><option>Hari ini</option></select></div></div>' +
+      '<div style="margin-top:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:10px;font-size:12px;color:#1d4ed8">AI PanenMatch merekomendasikan prioritas distribusi ke wilayah defisit dengan biaya logistik terendah.</div>',
+      '<button onclick="submitDistributionPlan(' + product.id + ')" style="width:100%;background:#15803d;color:#fff;font-weight:700;padding:14px;border-radius:14px;font-size:15px">Simpan Rencana</button>' +
+      '<button onclick="closeModal()" style="width:100%;color:#6b7280;font-weight:600;padding:12px;font-size:14px">Batal</button>'
+    );
+    return;
+  }
+  if(action === 'intervene') {
+    openModal('📊 Pantau & Intervensi',
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><span style="font-size:36px">' + product.foto + '</span><div><div style="font-weight:800;font-size:16px">' + product.name + '</div><div style="font-size:12px;color:#6b7280">Harga konsumen ' + fmtRp(product.hK) + ' / ' + product.unit + '</div></div></div>' +
+      '<div style="margin-bottom:12px"><label style="font-size:12px;font-weight:700;color:#6b7280;display:block;margin-bottom:6px">Aksi Pemerintah</label><select id="intervention-action" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;font-size:14px"><option>Pantau harga harian</option><option>Koordinasi distribusi tambahan</option><option>Aktifkan operasi pasar</option></select></div>' +
+      '<div style="margin-bottom:12px"><label style="font-size:12px;font-weight:700;color:#6b7280;display:block;margin-bottom:6px">Catatan Kebijakan</label><textarea id="intervention-note" style="width:100%;min-height:88px;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;font-size:14px;font-weight:500;resize:none">Prioritaskan pemantauan harga dan koordinasi stok lintas wilayah.</textarea></div>' +
+      '<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:10px;font-size:12px;color:#c2410c">Sistem akan mengirim ringkasan ke dashboard ketahanan pangan daerah.</div>',
+      '<button onclick="submitIntervention(' + product.id + ')" style="width:100%;background:#15803d;color:#fff;font-weight:700;padding:14px;border-radius:14px;font-size:15px">Simpan Tindakan</button>' +
+      '<button onclick="closeModal()" style="width:100%;color:#6b7280;font-weight:600;padding:12px;font-size:14px">Batal</button>'
+    );
+  }
+}
+
 /* ══════════════════════════════════════
    BOTTOM NAV
 ══════════════════════════════════════ */
@@ -322,7 +449,7 @@ function renderBeranda(){
           <span class="text-xs text-green-700 font-semibold">${unread} belum dibaca</span>
         </div>
         ${NOTIFS.map(n=>`
-        <div class="flex gap-3 px-4 py-3 border-b border-stone-50 last:border-0 ${n.read?'opacity-50':''}">
+        <div class="flex gap-3 px-4 py-3 border-b border-stone-50 last:border-0 ${n.read?'opacity-50':''} tap" data-notif-id="${n.id}">
           <div class="w-2 h-2 rounded-full mt-2 flex-shrink-0 ${n.read?'bg-stone-300':'bg-green-500'}"></div>
           <div class="flex-1">
             <div class="text-xs text-stone-700 leading-relaxed">${escHtml(n.text)}</div>
@@ -427,8 +554,14 @@ function renderPasar(){
           </div>
           ${c.cert.length?`<div class="flex gap-1 mt-3 flex-wrap">${c.cert.map(s=>badge(s,'green')).join('')}</div>`:''}
         </div>
-        ${u.role!=='petani'?`<button class="w-full bg-green-700 text-white font-extrabold py-4 rounded-2xl text-sm">🛒 Pesan Sekarang</button>`:''}
-        ${u.role==='petani'&&c.pId===1?`<button class="w-full border-2 border-green-700 text-green-700 font-extrabold py-4 rounded-2xl text-sm">✏️ Edit Produk</button>`:''}
+        ${u.role==='pembeli'?`
+        <div class="space-y-2">
+          <button class="w-full bg-green-700 text-white font-extrabold py-4 rounded-2xl text-sm" data-product-action="buy" data-product-id="${c.id}">🛒 Beli Sekarang</button>
+          <button class="w-full border-2 border-green-700 text-green-700 font-extrabold py-4 rounded-2xl text-sm" data-product-action="contact" data-product-id="${c.id}">💬 Hubungi Penjual</button>
+        </div>`:''}
+        ${u.role==='koperasi'?`<button class="w-full bg-green-700 text-white font-extrabold py-4 rounded-2xl text-sm" data-product-action="distribute" data-product-id="${c.id}">🚚 Rencanakan Distribusi</button>`:''}
+        ${u.role==='pemerintah'?`<button class="w-full bg-purple-700 text-white font-extrabold py-4 rounded-2xl text-sm" data-product-action="intervene" data-product-id="${c.id}">📊 Pantau & Intervensi</button>`:''}
+        ${u.role==='petani'&&c.pId===u.id?`<button class="w-full border-2 border-green-700 text-green-700 font-extrabold py-4 rounded-2xl text-sm" data-product-action="edit" data-product-id="${c.id}">✏️ Edit Produk</button>`:''}
       </div>
     </div>`;
   }
@@ -662,7 +795,7 @@ function renderAkun(){
     <div class="px-4 pt-4">
       ${tab==='finance'?`
       <div class="text-xs text-stone-400 mb-3">Produk pembiayaan tersedia untuk Anda</div>
-      ${FINANCING.map(f=>`
+      ${FINANCING.map((f,i)=>`
       <div class="bg-white rounded-2xl p-4 shadow-card mb-3">
         <div class="flex items-start gap-3 mb-3">
           <span class="text-4xl leading-none">${f.icon}</span>
@@ -682,7 +815,7 @@ function renderAkun(){
         <div class="text-xs text-stone-500 mb-1"><span class="font-bold text-stone-600">Syarat: </span>${escHtml(f.syarat)}</div>
         <div class="text-xs text-stone-500 mb-3"><span class="font-bold text-stone-600">Pencairan: </span>${f.cair}</div>
         <div class="flex gap-1 mb-3 flex-wrap">${f.tags.map(t=>badge(t,'green')).join('')}</div>
-        <button class="w-full border-2 border-green-700 text-green-700 font-extrabold py-2.5 rounded-xl text-sm">Ajukan Sekarang</button>
+        <button class="w-full border-2 border-green-700 text-green-700 font-extrabold py-2.5 rounded-xl text-sm" data-finance="${i}">Ajukan Sekarang</button>
       </div>`).join('')}
       `:/* LOGISTIK */`
       <div class="text-xs text-stone-400 mb-3">${LOGISTIK.length} pengiriman aktif & selesai</div>
@@ -796,11 +929,50 @@ function bindApp(){
   document.querySelectorAll('[data-akun-tab]').forEach(el=>{
     el.addEventListener('click',()=>setState({akunTab:el.dataset.akunTab}));
   });
+
+  document.querySelectorAll('[data-finance]').forEach(el => {
+    el.addEventListener('click', () => {
+      const f = FINANCING[parseInt(el.dataset.finance, 10)];
+      openModal('💰 Ajukan ' + f.nama,
+        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><span style="font-size:36px">' + f.icon + '</span><div><div style="font-weight:800;font-size:16px">' + f.nama + '</div><div style="font-size:12px;color:#6b7280">' + f.prov + '</div></div></div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">' +
+          '<div style="background:#f8fafc;border-radius:12px;padding:10px"><div style="font-size:10px;color:#6b7280">Bunga</div><div style="font-weight:800;color:#15803d;font-size:18px">' + f.bunga + '%/thn</div></div>' +
+          '<div style="background:#f8fafc;border-radius:12px;padding:10px"><div style="font-size:10px;color:#6b7280">Tenor</div><div style="font-weight:800;font-size:18px">' + f.tenor + ' bln</div></div>' +
+          '<div style="background:#f8fafc;border-radius:12px;padding:10px"><div style="font-size:10px;color:#6b7280">Maks. Pinjaman</div><div style="font-weight:800;font-size:14px">' + fmtRp(f.maks) + '</div></div>' +
+          '<div style="background:#f8fafc;border-radius:12px;padding:10px"><div style="font-size:10px;color:#6b7280">Pencairan</div><div style="font-weight:800;font-size:14px">' + f.cair + '</div></div>' +
+        '</div>' +
+        '<div style="margin-bottom:12px"><label style="font-size:12px;font-weight:700;color:#6b7280;display:block;margin-bottom:6px">Jumlah Pinjaman</label><input type="text" value="' + fmtRp(f.maks) + '" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;font-size:14px;font-weight:600;cursor:text"></div>' +
+        '<div style="margin-bottom:12px"><label style="font-size:12px;font-weight:700;color:#6b7280;display:block;margin-bottom:6px">Tujuan Dana</label><select style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;font-size:14px"><option>Beli bibit & pupuk</option><option>Sewa alat</option><option>Modal operasional</option></select></div>' +
+        '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:10px;font-size:12px;color:#15803d"><strong>Syarat:</strong> ' + f.syarat + '</div>',
+        '<button onclick="confirmModal(' + JSON.stringify('Pengajuan Berhasil') + ',' + JSON.stringify(f.nama + ' sedang diproses. Estimasi pencairan: ' + f.cair) + ')" style="width:100%;background:#15803d;color:#fff;font-weight:700;padding:14px;border-radius:14px;font-size:15px">Ajukan Sekarang</button>' +
+        '<button onclick="closeModal()" style="width:100%;color:#6b7280;font-weight:600;padding:12px;font-size:14px">Batal</button>'
+      );
+    });
+  });
+
+  document.querySelectorAll('[data-product-action]').forEach(el => {
+    el.addEventListener('click', () => {
+      openProductAction(el.dataset.productAction, parseInt(el.dataset.productId, 10));
+    });
+  });
+
+  document.querySelectorAll('[data-notif-id]').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = parseInt(el.dataset.notifId, 10);
+      const n = NOTIFS.find(x => x.id === id);
+      if(n) n.read = true;
+      render();
+    });
+  });
 }
 
 // Boot
 render();
 </script>
+<div id="modal-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end;justify-content:center" onclick="if(event.target===this) closeModal()">
+  <div id="modal-box" style="background:#fff;width:100%;max-width:430px;border-radius:24px 24px 0 0;max-height:85vh;overflow-y:auto"></div>
+</div>
 </body>
 </html>
 

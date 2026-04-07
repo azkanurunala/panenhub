@@ -685,6 +685,81 @@ function renderMatch(){
     </div>
   `;
 }
+function openModal(title, body, footer = '') {
+  const overlay = document.getElementById('modal-overlay');
+  const box = document.getElementById('modal-box');
+  box.innerHTML = `
+    <div class="modal-hdr">
+      <div>
+        <div style="font-size:16px;font-weight:800;color:#0f172a">${title}</div>
+        <div style="font-size:12px;color:#64748b;margin-top:4px">Simulasi transaksi PanenHub Wallet</div>
+      </div>
+      <button onclick="closeModal()" style="width:34px;height:34px;border-radius:999px;background:#f1f5f9;color:#64748b;font-size:18px;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>
+    <div class="modal-body">${body}</div>
+    <div class="modal-ftr" style="flex-direction:column;align-items:stretch">${footer}</div>
+  `;
+  overlay.style.display = 'flex';
+}
+function closeModal() {
+  const overlay = document.getElementById('modal-overlay');
+  if(overlay) overlay.style.display = 'none';
+}
+function confirmWalletModal(title, message) {
+  openModal(title,
+    '<div style="text-align:center;padding:8px 0 12px"><div style="width:72px;height:72px;border-radius:999px;background:#f0fdf4;border:2px solid #bbf7d0;color:#15803d;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;margin:0 auto 16px">✓</div><div style="font-size:15px;line-height:1.6;color:#475569">' + message + '</div></div>',
+    '<button class="btn-primary" style="width:100%;background:#15803d" onclick="closeModal()">Tutup</button>'
+  );
+}
+function parseMoney(value) {
+  return parseInt(String(value || '').replace(/[^\d]/g, ''), 10) || 0;
+}
+function openWalletAction(type) {
+  const saldo = Number(state.user?.saldo) || 0;
+  if(type === 'topup') {
+    openModal('Top Up Wallet',
+      '<div style="display:grid;gap:14px">' +
+        '<div><label style="display:block;font-size:11px;font-weight:800;color:#64748b;margin-bottom:6px">Nominal Top Up</label><input id="wallet-amount" type="text" value="Rp 500.000" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px 14px;font-size:14px;font-weight:700;color:#0f172a;cursor:text"></div>' +
+        '<div><label style="display:block;font-size:11px;font-weight:800;color:#64748b;margin-bottom:6px">Metode Pembayaran</label><select id="wallet-method" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px 14px;font-size:14px;color:#0f172a"><option>Transfer Bank</option><option>QRIS</option><option>Minimarket</option></select></div>' +
+        '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:12px;font-size:12px;color:#15803d">Saldo saat ini: <strong>' + fmtRp(saldo) + '</strong></div>' +
+      '</div>',
+      '<button class="btn-primary" style="width:100%;background:#15803d" onclick="submitTopup()">Konfirmasi Top Up</button><button class="btn-ghost" style="width:100%" onclick="closeModal()">Batal</button>'
+    );
+    return;
+  }
+  openModal('Withdraw Wallet',
+    '<div style="display:grid;gap:14px">' +
+      '<div><label style="display:block;font-size:11px;font-weight:800;color:#64748b;margin-bottom:6px">Nominal Withdraw</label><input id="wallet-withdraw-amount" type="text" value="Rp ' + new Intl.NumberFormat('id-ID').format(Math.min(saldo, 250000)) + '" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px 14px;font-size:14px;font-weight:700;color:#0f172a;cursor:text"></div>' +
+      '<div><label style="display:block;font-size:11px;font-weight:800;color:#64748b;margin-bottom:6px">Rekening Tujuan</label><select id="wallet-bank" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px 14px;font-size:14px;color:#0f172a"><option>BCA • 1234567890</option><option>BRI • 0021345678</option><option>Mandiri • 1370099988</option></select></div>' +
+      '<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:12px;font-size:12px;color:#c2410c">Maksimal withdraw: <strong>' + fmtRp(saldo) + '</strong></div>' +
+    '</div>',
+    '<button class="btn-primary" style="width:100%;background:#0f172a" onclick="submitWithdraw()">Konfirmasi Withdraw</button><button class="btn-ghost" style="width:100%" onclick="closeModal()">Batal</button>'
+  );
+}
+function submitTopup() {
+  const amount = parseMoney(document.getElementById('wallet-amount')?.value);
+  const method = document.getElementById('wallet-method')?.value || 'Transfer Bank';
+  if(amount <= 0) {
+    confirmWalletModal('Nominal Tidak Valid', 'Masukkan nominal top up yang valid terlebih dahulu.');
+    return;
+  }
+  state.user.saldo = (Number(state.user.saldo) || 0) + amount;
+  render();
+  confirmWalletModal('Top Up Berhasil', 'Top up sebesar ' + fmtRp(amount) + ' melalui ' + method + ' sedang diproses. Saldo baru: ' + fmtRp(state.user.saldo) + '.');
+}
+function submitWithdraw() {
+  const amount = parseMoney(document.getElementById('wallet-withdraw-amount')?.value);
+  const bank = document.getElementById('wallet-bank')?.value || 'rekening utama';
+  const saldo = Number(state.user?.saldo) || 0;
+  if(amount <= 0 || amount > saldo) {
+    confirmWalletModal('Withdraw Ditolak', 'Nominal withdraw harus lebih dari nol dan tidak boleh melebihi saldo tersedia.');
+    return;
+  }
+  state.user.saldo = saldo - amount;
+  render();
+  confirmWalletModal('Withdraw Berhasil', 'Penarikan dana sebesar ' + fmtRp(amount) + ' ke ' + bank + ' berhasil dibuat. Sisa saldo: ' + fmtRp(state.user.saldo) + '.');
+}
+
 function renderAkun() {
   const u = state.user;
   const isP = u.role==='petani';
@@ -709,11 +784,11 @@ function renderAkun() {
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                    <div class="space-y-2">
                       <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Lengkap</label>
-                      <input type="text" value="${u.name}" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-bold text-slate-700 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all outline-none"/>
+                      <input type="text" value="${u.name}" data-profile-name class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-bold text-slate-700 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all outline-none"/>
                    </div>
                    <div class="space-y-2">
                       <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Domisili Operasional</label>
-                      <input type="text" value="${u.loc}" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-bold text-slate-700 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all outline-none"/>
+                      <input type="text" value="${u.loc}" data-profile-loc class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-bold text-slate-700 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all outline-none"/>
                    </div>
                    ${isP ? `
                    <div class="space-y-2">
@@ -727,7 +802,7 @@ function renderAkun() {
                    ` : ''}
                 </div>
                 <div class="mt-10 flex justify-end">
-                   <button class="bg-slate-900 text-white px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-green-700 transition-all shadow-xl active:scale-95">Simpan Perubahan</button>
+                   <button class="bg-slate-900 text-white px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-green-700 transition-all shadow-xl active:scale-95" data-action="save-profile">Simpan Perubahan</button>
                 </div>
              </div>
              
@@ -749,8 +824,8 @@ function renderAkun() {
                       <div class="text-4xl opacity-20 rotate-12">💳</div>
                    </div>
                    <div class="flex gap-3">
-                      <button class="flex-1 bg-white/10 hover:bg-white/20 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Top Up</button>
-                      <button class="flex-1 bg-white text-slate-900 hover:bg-green-400 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Withdraw</button>
+                      <button class="flex-1 bg-white/10 hover:bg-white/20 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all" data-action="topup">Top Up</button>
+                      <button class="flex-1 bg-white text-slate-900 hover:bg-green-400 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all" data-action="withdraw">Withdraw</button>
                    </div>
                 </div>
                 <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-green-500/10 rounded-full blur-3xl"></div>
@@ -795,9 +870,27 @@ function bindEvents(){
   const pq = document.getElementById('pasar-q');
   if(pq) pq.addEventListener('input', e => setState({pasarQ: e.target.value}));
   
+  const saveBtn = document.querySelector('[data-action="save-profile"]');
+  if(saveBtn) saveBtn.addEventListener('click', () => {
+    const nameInput = document.querySelector('[data-profile-name]');
+    const locInput = document.querySelector('[data-profile-loc]');
+    if(nameInput && nameInput.value.trim()) state.user.name = nameInput.value.trim();
+    if(locInput && locInput.value.trim()) state.user.loc = locInput.value.trim();
+    saveBtn.textContent = '✓ Tersimpan!';
+    saveBtn.style.background = '#15803d';
+    setTimeout(() => render(), 1200);
+  });
+
+  const topupBtn = document.querySelector('[data-action="topup"]');
+  if(topupBtn) topupBtn.addEventListener('click', () => openWalletAction('topup'));
+
+  const withdrawBtn = document.querySelector('[data-action="withdraw"]');
+  if(withdrawBtn) withdrawBtn.addEventListener('click', () => openWalletAction('withdraw'));
+
   const lob = document.getElementById('logout-btn');
   if(lob) lob.addEventListener('click', () => {
      if(confirm('Anda yakin ingin keluar dari sesi ini?')) {
+        closeModal();
         setState({user: null});
         setTimeout(() => location.reload(), 1000); // Back to loading then reset
      }
@@ -807,6 +900,7 @@ function bindEvents(){
 // Start
 render();
 </script>
+<div id="modal-overlay" onclick="if(event.target===this) closeModal()" style="display:none"><div id="modal-box" class="modal-box"></div></div>
 </body>
 </html>
 
